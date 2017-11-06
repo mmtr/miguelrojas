@@ -1,6 +1,10 @@
-# miguelrojas
+# Miguel Rojas
 
-> Miguel Rojas Photography | Capturing the beauty of a moment
+> Capturing the beauty of a moment
+
+## Introduction
+
+This project is the result of combining two of my passions: **photography** and **web development**.
 
 ## Build Setup
 
