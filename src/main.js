@@ -1,12 +1,10 @@
 import Vue from 'vue';
-import App from './App';
+import MiguelRojas from './MiguelRojas.vue';
 import router from './router';
 
 Vue.config.productionTip = false;
 
-/* eslint-disable no-new */
 new Vue({
-  el: '#app',
   router,
-  render: h => h(App),
-});
+  render: h => h(MiguelRojas),
+}).$mount('.js-miguel-rojas');
