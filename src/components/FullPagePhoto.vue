@@ -10,6 +10,7 @@
 </template>
 
 <script>
+import * as firebase from 'firebase';
 import Flickr from 'flickr-sdk';
 
 export default {
@@ -30,22 +31,38 @@ export default {
   mounted() {
     const flickr = new Flickr(process.env.VUE_APP_FLICKR_API_KEY);
 
-    flickr.people.getPhotos({
-      user_id: 'miguelmrojas',
-    }).then((getPhotosResponse) => {
-      const photos = getPhotosResponse.body.photos.photo;
-      const photo = photos[Math.floor(Math.random() * photos.length)];
-      flickr.photos.getSizes({
-        photo_id: photo.id,
-      }).then((getSizesResponse) => {
-        const { source } = getSizesResponse.body.sizes.size.pop();
-        const img = new Image();
-        img.addEventListener('load', () => {
-          this.source = source;
+    const config = {
+      apiKey: 'AIzaSyAqmQLL566Ux6Nh4VZr_Ckm9dJye773mjQ',
+      authDomain: 'miguelrojas-photos.firebaseapp.com',
+      databaseURL: 'https://miguelrojas-photos.firebaseio.com',
+      projectId: 'miguelrojas-photos',
+      storageBucket: 'miguelrojas-photos.appspot.com',
+      messagingSenderId: '826239206435',
+    };
+    if (!firebase.apps.length) {
+      firebase.initializeApp(config);
+    }
+    firebase.database().ref('photos').once('value')
+      .then((snapshot) => {
+        const photos = snapshot.val();
+        const photo = photos[Math.floor(Math.random() * photos.length)];
+        flickr.photos.getSizes({
+          photo_id: photo.flickr,
+        }).then((getSizesResponse) => {
+          const { source } = getSizesResponse.body.sizes.size.pop();
+          this.preloadImage(source);
         });
-        img.src = source;
       });
-    });
+  },
+
+  methods: {
+    preloadImage(source) {
+      const img = new Image();
+      img.addEventListener('load', () => {
+        this.source = source;
+      });
+      img.src = source;
+    },
   },
 };
 </script>

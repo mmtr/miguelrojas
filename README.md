@@ -11,6 +11,7 @@ using the following technologies:
 
 * [Vue.js](https://vuejs.org/) 
 * [Webpack](https://webpack.js.org/)
+* [Firebase](https://firebase.google.com/)
 
 ## Build Setup
 
