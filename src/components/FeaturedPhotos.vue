@@ -10,8 +10,8 @@
 </template>
 
 <script>
-import Flickr from 'flickr-sdk';
 import firebase from '../mixins/firebase';
+import flickr from '../mixins/flickr';
 
 export default {
   name: 'featured-photos',
@@ -23,7 +23,7 @@ export default {
     };
   },
 
-  mixins: [firebase],
+  mixins: [firebase, flickr],
 
   computed: {
     loading() {
@@ -36,6 +36,9 @@ export default {
   },
 
   methods: {
+    /**
+     * Gets the featured photos to be displayed from Firebase
+     */
     getFeaturedPhotos() {
       this.$firebase.database().ref('photos').orderByChild('featured').equalTo(true)
         .once('value')
@@ -46,22 +49,11 @@ export default {
     },
 
     getFeaturedPhoto() {
-      const flickr = new Flickr(process.env.VUE_APP_FLICKR_API_KEY);
       const photo = this.photos[Math.floor(Math.random() * this.photos.length)];
-      flickr.photos.getSizes({
-        photo_id: photo.flickr_id,
-      }).then((getSizesResponse) => {
-        const { source } = getSizesResponse.body.sizes.size.pop();
-        this.preloadImage(source);
-      });
-    },
-
-    preloadImage(source) {
-      const img = new Image();
-      img.addEventListener('load', () => {
-        this.source = source;
-      });
-      img.src = source;
+      this.getPhotoSource(photo.flickr_id)
+        .then((source) => {
+          this.source = source;
+        });
     },
   },
 };

@@ -10,6 +10,7 @@
 </template>
 
 <style lang="scss">
+  @import '~@/styles/_vars.scss';
   @import url('https://fonts.googleapis.com/css?family=Quicksand:300,400,700');
 
   *,
@@ -33,9 +34,9 @@
     font-size: 1rem;
     font-weight: 400;
     line-height: 1.5rem;
-    color: white;
+    color: $white;
     text-align: left;
-    background: #2f2f2f url('~@/assets/bg.svg') no-repeat center center fixed;
+    background: $black url('~@/assets/bg.svg') no-repeat center center fixed;
     background-size: cover;
   }
 
@@ -44,8 +45,8 @@
     z-index: 1;
     padding: 1rem;
     width: 100%;
-    background-color: rgba(#2f2f2f, 0.8);
-    box-shadow: 0 0 10px #1f1f1f;
+    background-color: rgba($black, 0.8);
+    box-shadow: 0 0 10px darken($black, 10);
 
     .header__logo-link {
       display: inline-block;

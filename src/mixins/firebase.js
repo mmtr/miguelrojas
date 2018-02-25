@@ -1,11 +1,17 @@
 import * as firebase from 'firebase';
 
+/**
+ * Mixin for setting up Firebase during the creation of Vue components
+ */
 const FirebaseMixin = {
   created() {
     this.initializeFirebase();
   },
 
   methods: {
+    /**
+     * Initializes Firebase in this.$firebase
+     */
     initializeFirebase() {
       const config = {
         apiKey: process.env.VUE_APP_FIREBASE_API_KEY,
