@@ -10,17 +10,20 @@
 </template>
 
 <script>
-import * as firebase from 'firebase';
 import Flickr from 'flickr-sdk';
+import firebase from '../mixins/firebase';
 
 export default {
-  name: 'full-page-photo',
+  name: 'featured-photos',
 
   data() {
     return {
+      photos: [],
       source: null,
     };
   },
+
+  mixins: [firebase],
 
   computed: {
     loading() {
@@ -28,34 +31,31 @@ export default {
     },
   },
 
-  mounted() {
-    const flickr = new Flickr(process.env.VUE_APP_FLICKR_API_KEY);
-
-    const config = {
-      apiKey: 'AIzaSyAqmQLL566Ux6Nh4VZr_Ckm9dJye773mjQ',
-      authDomain: 'miguelrojas-photos.firebaseapp.com',
-      databaseURL: 'https://miguelrojas-photos.firebaseio.com',
-      projectId: 'miguelrojas-photos',
-      storageBucket: 'miguelrojas-photos.appspot.com',
-      messagingSenderId: '826239206435',
-    };
-    if (!firebase.apps.length) {
-      firebase.initializeApp(config);
-    }
-    firebase.database().ref('photos').once('value')
-      .then((snapshot) => {
-        const photos = snapshot.val();
-        const photo = photos[Math.floor(Math.random() * photos.length)];
-        flickr.photos.getSizes({
-          photo_id: photo.flickr,
-        }).then((getSizesResponse) => {
-          const { source } = getSizesResponse.body.sizes.size.pop();
-          this.preloadImage(source);
-        });
-      });
+  created() {
+    this.getFeaturedPhotos();
   },
 
   methods: {
+    getFeaturedPhotos() {
+      this.$firebase.database().ref('photos').orderByChild('featured').equalTo(true)
+        .once('value')
+        .then((snapshot) => {
+          this.photos = snapshot.val();
+          this.getFeaturedPhoto();
+        });
+    },
+
+    getFeaturedPhoto() {
+      const flickr = new Flickr(process.env.VUE_APP_FLICKR_API_KEY);
+      const photo = this.photos[Math.floor(Math.random() * this.photos.length)];
+      flickr.photos.getSizes({
+        photo_id: photo.flickr_id,
+      }).then((getSizesResponse) => {
+        const { source } = getSizesResponse.body.sizes.size.pop();
+        this.preloadImage(source);
+      });
+    },
+
     preloadImage(source) {
       const img = new Image();
       img.addEventListener('load', () => {

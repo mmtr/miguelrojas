@@ -1,16 +1,16 @@
 <template>
   <div class="home">
-    <FullPagePhoto/>
+    <featured-photos/>
   </div>
 </template>
 
 <script>
-import FullPagePhoto from '@/components/FullPagePhoto.vue';
+import FeaturedPhotos from '@/components/FeaturedPhotos.vue';
 
 export default {
   name: 'home',
   components: {
-    FullPagePhoto,
+    FeaturedPhotos,
   },
 };
 </script>
