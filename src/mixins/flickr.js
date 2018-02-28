@@ -10,10 +10,10 @@ const FlickrMixin = {
 
   methods: {
     /**
-     * Initializes Flickr in this.$flickr
+     * Initializes Flickr in this.flickr
      */
     initializeFlickr() {
-      this.$flickr = new Flickr(process.env.VUE_APP_FLICKR_API_KEY);
+      this.flickr = new Flickr(process.env.VUE_APP_FLICKR_API_KEY);
     },
 
     /**
@@ -21,11 +21,11 @@ const FlickrMixin = {
      *
      * @async
      * @param photoId {Integer} ID of the photo
-     * @returns {Promise<String>} URL of the image
+     * @returns {Promise<String>} URL with the source of the image
      */
-    getPhotoSource(photoId) {
+    async getPhotoSource(photoId) {
       return new Promise((resolve) => {
-        this.$flickr.photos.getSizes({
+        this.flickr.photos.getSizes({
           photo_id: photoId,
         }).then((getSizesResponse) => {
           const { source } = getSizesResponse.body.sizes.size.pop();
@@ -36,7 +36,14 @@ const FlickrMixin = {
       });
     },
 
-    preloadImage(source) {
+    /**
+     * Pre-loads the given URL image source in background
+     *
+     * @async
+     * @param source {String} The URL image source to be pre-loaded
+     * @returns {Promise<String>} URL of the image when it has been pre-loaded
+     */
+    async preloadImage(source) {
       return new Promise((resolve) => {
         const img = new Image();
         img.addEventListener('load', () => {

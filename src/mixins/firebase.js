@@ -10,7 +10,7 @@ const FirebaseMixin = {
 
   methods: {
     /**
-     * Initializes Firebase in this.$firebase
+     * Initializes Firebase in this.firebase
      */
     initializeFirebase() {
       const config = {
@@ -26,7 +26,7 @@ const FirebaseMixin = {
         firebase.initializeApp(config);
       }
 
-      this.$firebase = firebase;
+      this.firebase = firebase;
     },
   },
 };
