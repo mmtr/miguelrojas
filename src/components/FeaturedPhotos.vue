@@ -30,6 +30,16 @@ export default {
     activePhoto() {
       return this.photos.find(photo => photo.active && photo.source);
     },
+
+    layout() {
+      let layout = null;
+      if (window.screen.width > window.screen.height) {
+        layout = 'landscape';
+      } else {
+        layout = 'portrait';
+      }
+      return layout;
+    },
   },
 
   created() {
@@ -44,7 +54,7 @@ export default {
       this.firebase.database().ref('photos').orderByChild('featured').equalTo(true)
         .once('value')
         .then((snapshot) => {
-          this.photos = snapshot.val().filter(photo => photo.layout === 'landscape')
+          this.photos = snapshot.val().filter(photo => photo.layout === this.layout)
             .sort(() => Math.random() - 0.5);
           this.iteratePhotos();
         });
