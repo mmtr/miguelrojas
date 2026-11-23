@@ -26,17 +26,26 @@ Other commands:
 
 Create a post, set the photo as its **featured image**, write the description in the post body and fill in **Location** in the "Photo details" sidebar panel. Camera, lens, focal length, aperture, shutter speed, ISO and date taken are read from the photo file on upload.
 
+## Publishing an album
+
+**Albums → Add New Album**, then drop your photos into the gallery (new albums start with one). Text above or below the gallery becomes the album's introduction, and each image's caption is shown with it in the viewer. Set the album's **Location** in the "Album details" panel. A photo taken somewhere else can have its own location: select it in the Media Library and fill in **Location**.
+
+The home grid shows the album's cover (the featured image, or the first photo if none is set) with its title and photo count. The photos themselves only appear on the album page (`/albums/<name>/`); all albums are listed at `/albums/`. A link to one photo is the album URL plus `#photo-<image id>`, which is what the address bar shows while viewing it.
+
 The original file you upload stays public, including any GPS coordinates in it. Remove location data before uploading (on macOS: Photos → File → Export with "Include location information" off).
 
 ## Layout
 
 - `plugins/photos-core/`: site features that don't depend on the theme
   - `includes/details.php`: reads camera data on upload, location field, formatting
+  - `includes/albums.php`: album post type, home grid mixing, cover fallback, Media Library location field
   - `blocks/photo-details/`: details list on a photo's page
-  - `blocks/photo-viewer/`: full-screen viewer opened from the grid (URL updates, Esc, arrow keys, swipe, back button)
-  - `editor/photo-panel.js`: "Photo details" panel in the post editor
+  - `blocks/photo-viewer/`: full-screen viewer for grid and album photos (URL updates, Esc, arrow keys, swipe, back button)
+  - `blocks/entry-label/`: album title and photo count over album covers in the grid
+  - `blocks/album-summary/`: "7 photos · Location · Month Year" line on album pages
+  - `editor/photo-panel.js`: "Photo details" / "Album details" panel in the editor
 - `themes/photos/theme.json`: colors, type, spacing
-- `themes/photos/templates/`: page templates (`index` = photo grid, `single` = one photo)
+- `themes/photos/templates/`: page templates (`index` = photo grid, `single` = one photo, `single-album` = album page)
 - `themes/photos/parts/`: header and footer
 - `themes/photos/style.css`: extra CSS
 

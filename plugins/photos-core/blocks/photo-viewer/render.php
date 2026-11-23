@@ -2,8 +2,9 @@
 /**
  * Photo Viewer block: a full-screen dialog for the photos of the current page.
  *
- * It reads the main query (the same posts the grid shows) and takes over clicks on links
- * to those posts. Without JavaScript the links simply open each photo's page.
+ * On an album page it shows the album's photos; elsewhere, the photo posts of the main
+ * query (the same posts the grid shows; albums keep linking to their own page).
+ * Without JavaScript, links open each photo's page or image file instead.
  *
  * @package photos-core
  */
@@ -11,10 +12,14 @@
 global $wp_query;
 
 $photos_list = array();
-foreach ( (array) ( $wp_query->posts ?? array() ) as $photos_post ) {
-	$photos_photo = photos_get_viewer_photo( $photos_post );
-	if ( $photos_photo ) {
-		$photos_list[] = $photos_photo;
+if ( is_singular( 'album' ) ) {
+	$photos_list = photos_get_album_viewer_photos( get_queried_object() );
+} else {
+	foreach ( (array) ( $wp_query->posts ?? array() ) as $photos_post ) {
+		$photos_photo = 'post' === $photos_post->post_type ? photos_get_viewer_photo( $photos_post ) : null;
+		if ( $photos_photo ) {
+			$photos_list[] = $photos_photo;
+		}
 	}
 }
 
@@ -39,6 +44,7 @@ $photos_icon = static function ( $path ) {
 	<?php echo get_block_wrapper_attributes( array( 'class' => 'photos-viewer' ) ); ?>
 	aria-labelledby="photos-viewer-title"
 	data-wp-interactive="photos"
+	data-wp-init="callbacks.openFromHash"
 	data-wp-watch="callbacks.syncDialog"
 	data-wp-on--cancel="actions.onCancel"
 	data-wp-on-document--click="actions.openFromLink"
@@ -86,6 +92,6 @@ $photos_icon = static function ( $path ) {
 				</div>
 			</template>
 		</dl>
-		<a class="photos-viewer__link" data-wp-bind--href="state.current.url"><?php esc_html_e( 'Open photo page', 'photos-core' ); ?></a>
+		<a class="photos-viewer__link" data-wp-bind--href="state.current.link" data-wp-bind--hidden="!state.current.link"><?php esc_html_e( 'Open photo page', 'photos-core' ); ?></a>
 	</aside>
 </dialog>

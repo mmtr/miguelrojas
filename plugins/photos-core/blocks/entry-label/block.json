@@ -1,0 +1,17 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "photos/entry-label",
+	"title": "Entry Label",
+	"category": "media",
+	"icon": "tag",
+	"description": "Labels albums in a photo grid with their title and photo count. Shows nothing for single photos.",
+	"textdomain": "photos-core",
+	"usesContext": [ "postId", "postType" ],
+	"supports": {
+		"html": false
+	},
+	"editorScript": "file:./edit.js",
+	"style": "file:./style.css",
+	"render": "file:./render.php"
+}

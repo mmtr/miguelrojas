@@ -96,6 +96,10 @@ html:has(dialog.photos-viewer[open]) {
 	opacity: 0.75;
 }
 
+.photos-viewer [hidden] {
+	display: none !important;
+}
+
 .photos-viewer button {
 	appearance: none;
 	display: grid;

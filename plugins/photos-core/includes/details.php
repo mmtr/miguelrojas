@@ -44,23 +44,25 @@ function photos_read_extra_image_meta( $meta, $file, $image_type, $iptc, $exif )
 add_filter( 'wp_read_image_metadata', 'photos_read_extra_image_meta', 10, 5 );
 
 /**
- * Register the per-photo location field so the editor can read and save it.
+ * Register the location field for photo posts, albums and individual images.
  */
 function photos_register_meta() {
-	register_post_meta(
-		'post',
-		'photos_location',
-		array(
-			'type'              => 'string',
-			'single'            => true,
-			'default'           => '',
-			'show_in_rest'      => true,
-			'sanitize_callback' => 'sanitize_text_field',
-			'auth_callback'     => static function ( $allowed, $meta_key, $post_id ) {
-				return current_user_can( 'edit_post', $post_id );
-			},
-		)
-	);
+	foreach ( array( 'post', 'album', 'attachment' ) as $post_type ) {
+		register_post_meta(
+			$post_type,
+			'photos_location',
+			array(
+				'type'              => 'string',
+				'single'            => true,
+				'default'           => '',
+				'show_in_rest'      => true,
+				'sanitize_callback' => 'sanitize_text_field',
+				'auth_callback'     => static function ( $allowed, $meta_key, $post_id ) {
+					return current_user_can( 'edit_post', $post_id );
+				},
+			)
+		);
+	}
 }
 add_action( 'init', 'photos_register_meta' );
 
@@ -129,30 +131,40 @@ function photos_format_focal_length( $focal, $focal35 ) {
 }
 
 /**
- * Image meta of a post's featured image.
+ * Image meta (camera data) stored for an image.
  *
- * @param int $post_id Post ID.
+ * @param int $image_id Attachment ID.
  * @return array
  */
-function photos_get_image_meta( $post_id ) {
-	$image_id = get_post_thumbnail_id( $post_id );
+function photos_get_attachment_image_meta( $image_id ) {
 	$metadata = $image_id ? wp_get_attachment_metadata( $image_id ) : array();
 	return is_array( $metadata ) && ! empty( $metadata['image_meta'] ) ? $metadata['image_meta'] : array();
 }
 
 /**
- * Details shown with a photo, in display order, skipping anything unknown.
+ * Location set on the image itself (Media Library), if any.
  *
- * @param int $post_id Post ID.
+ * @param int $image_id Attachment ID.
+ * @return string
+ */
+function photos_get_image_location( $image_id ) {
+	return $image_id ? trim( (string) get_post_meta( $image_id, 'photos_location', true ) ) : '';
+}
+
+/**
+ * Details shown with an image, in display order, skipping anything unknown.
+ *
+ * @param int    $image_id Attachment ID.
+ * @param string $location Location to show.
  * @return array[] List of { key, label, value }.
  */
-function photos_get_details_items( $post_id ) {
-	$meta  = photos_get_image_meta( $post_id );
+function photos_get_image_details_items( $image_id, $location ) {
+	$meta  = photos_get_attachment_image_meta( $image_id );
 	$taken = (int) ( $meta['created_timestamp'] ?? 0 );
 	$iso   = (int) ( $meta['iso'] ?? 0 );
 
 	$values = array(
-		'location' => array( __( 'Location', 'photos-core' ), (string) get_post_meta( $post_id, 'photos_location', true ) ),
+		'location' => array( __( 'Location', 'photos-core' ), (string) $location ),
 		// EXIF times have no time zone, so format them as-is instead of shifting to the site's zone.
 		'taken'    => array( __( 'Taken', 'photos-core' ), $taken ? wp_date( get_option( 'date_format' ), $taken, new DateTimeZone( 'UTC' ) ) : '' ),
 		'camera'   => array( __( 'Camera', 'photos-core' ), photos_format_camera( $meta['make'] ?? '', $meta['camera'] ?? '' ) ),
@@ -177,6 +189,19 @@ function photos_get_details_items( $post_id ) {
 }
 
 /**
+ * Details of a photo post: its featured image, with the post's location
+ * (or the image's own location when the post has none).
+ *
+ * @param int $post_id Post ID.
+ * @return array[]
+ */
+function photos_get_details_items( $post_id ) {
+	$image_id = (int) get_post_thumbnail_id( $post_id );
+	$location = trim( (string) get_post_meta( $post_id, 'photos_location', true ) );
+	return photos_get_image_details_items( $image_id, $location ? $location : photos_get_image_location( $image_id ) );
+}
+
+/**
  * Post content as plain text, for places that can't render HTML (the viewer).
  *
  * @param WP_Post $post Post.
@@ -188,31 +213,65 @@ function photos_get_description( $post ) {
 }
 
 /**
- * Everything the viewer needs to show one photo, or null if the post has no featured image.
+ * Everything the viewer needs to show one image, or null if the image is missing.
+ *
+ * @param int   $image_id Attachment ID.
+ * @param array $fields   url (history URL), link ("Open photo page"), imageId, title, description, items, alt.
+ * @return array|null
+ */
+function photos_build_viewer_photo( $image_id, $fields ) {
+	$full = $image_id ? wp_get_attachment_image_src( $image_id, 'full' ) : false;
+	if ( ! $full ) {
+		return null;
+	}
+
+	$fields = array_merge(
+		array(
+			'url'         => null,
+			'link'        => null,
+			'imageId'     => null,
+			'title'       => '',
+			'description' => '',
+			'items'       => array(),
+			'alt'         => '',
+		),
+		$fields
+	);
+
+	$alt = trim( (string) $fields['alt'] );
+	if ( '' === $alt ) {
+		$alt = trim( (string) get_post_meta( $image_id, '_wp_attachment_image_alt', true ) );
+	}
+	$srcset = wp_get_attachment_image_srcset( $image_id, 'full' );
+
+	return array_merge(
+		$fields,
+		array(
+			'src'    => $full[0],
+			'width'  => (int) $full[1],
+			'height' => (int) $full[2],
+			'srcset' => $srcset ? $srcset : null,
+			'alt'    => '' !== $alt ? $alt : $fields['title'],
+		)
+	);
+}
+
+/**
+ * Viewer data for a photo post, or null if it has no featured image.
  *
  * @param WP_Post $post Post.
  * @return array|null
  */
 function photos_get_viewer_photo( $post ) {
-	$image_id = get_post_thumbnail_id( $post );
-	$full     = $image_id ? wp_get_attachment_image_src( $image_id, 'full' ) : false;
-	if ( ! $full ) {
-		return null;
-	}
-
-	$title  = html_entity_decode( get_the_title( $post ), ENT_QUOTES, 'UTF-8' );
-	$alt    = trim( (string) get_post_meta( $image_id, '_wp_attachment_image_alt', true ) );
-	$srcset = wp_get_attachment_image_srcset( $image_id, 'full' );
-
-	return array(
-		'url'         => get_permalink( $post ),
-		'title'       => $title,
-		'description' => photos_get_description( $post ),
-		'items'       => photos_get_details_items( $post->ID ),
-		'src'         => $full[0],
-		'width'       => (int) $full[1],
-		'height'      => (int) $full[2],
-		'srcset'      => $srcset ? $srcset : null,
-		'alt'         => $alt ? $alt : $title,
+	$url = get_permalink( $post );
+	return photos_build_viewer_photo(
+		(int) get_post_thumbnail_id( $post ),
+		array(
+			'url'         => $url,
+			'link'        => $url,
+			'title'       => html_entity_decode( get_the_title( $post ), ENT_QUOTES, 'UTF-8' ),
+			'description' => photos_get_description( $post ),
+			'items'       => photos_get_details_items( $post->ID ),
+		)
 	);
 }

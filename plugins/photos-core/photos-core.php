@@ -16,6 +16,7 @@ defined( 'ABSPATH' ) || exit;
 define( 'PHOTOS_CORE_FILE', __FILE__ );
 
 require __DIR__ . '/includes/details.php';
+require __DIR__ . '/includes/albums.php';
 
 add_action(
 	'init',
@@ -30,6 +31,8 @@ add_action(
 
 		register_block_type( __DIR__ . '/blocks/photo-details' );
 		register_block_type( __DIR__ . '/blocks/photo-viewer' );
+		register_block_type( __DIR__ . '/blocks/entry-label' );
+		register_block_type( __DIR__ . '/blocks/album-summary' );
 	}
 );
 

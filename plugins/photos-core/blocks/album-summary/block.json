@@ -1,0 +1,20 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "photos/album-summary",
+	"title": "Album Summary",
+	"category": "media",
+	"icon": "info-outline",
+	"description": "Number of photos, location and when the album's photos were taken.",
+	"textdomain": "photos-core",
+	"usesContext": [ "postId" ],
+	"supports": {
+		"html": false,
+		"align": [ "wide" ],
+		"color": { "text": true },
+		"spacing": { "margin": true },
+		"typography": { "fontSize": true }
+	},
+	"editorScript": "file:./edit.js",
+	"render": "file:./render.php"
+}

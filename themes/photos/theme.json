@@ -87,6 +87,10 @@
 			},
 			"core/navigation": {
 				"typography": { "fontSize": "var(--wp--preset--font-size--small)" }
+			},
+			"photos/album-summary": {
+				"color": { "text": "var(--wp--preset--color--muted)" },
+				"typography": { "fontSize": "var(--wp--preset--font-size--small)" }
 			}
 		}
 	},

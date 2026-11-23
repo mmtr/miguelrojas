@@ -4,7 +4,8 @@
  */
 import { store, getElement, withSyncEvent } from '@wordpress/interactivity';
 
-const EMPTY = { title: '', description: '', url: null, items: [], src: null, srcset: null, width: null, height: null, alt: '' };
+const EMPTY = { title: '', description: '', url: null, link: null, imageId: null, items: [], src: null, srcset: null, width: null, height: null, alt: '' };
+const PHOTO_HASH = /^#photo-(\d+)$/;
 const SWIPE_DISTANCE = 50;
 
 let pushedEntry = false; // The open viewer added a history entry, so closing means going back.
@@ -23,6 +24,31 @@ const historyState = ( photosViewer ) => {
 const pathKey = ( href ) => {
 	const url = new URL( href, window.location.href );
 	return url.origin + url.pathname.replace( /\/$/, '' );
+};
+
+// Photo named in the URL (#photo-<id>), if it's on this page.
+const photoIndexFromHash = () => {
+	const imageId = Number( window.location.hash.match( PHOTO_HASH )?.[ 1 ] );
+	return imageId ? state.photos.findIndex( ( photo ) => photo.imageId === imageId ) : -1;
+};
+
+// Which photo a click is for: album photos by their image (class wp-image-<id>),
+// photo posts by a link to their page.
+const findPhotoIndex = ( target ) => {
+	const link = target.closest?.( 'a[href]' );
+	const img = target.closest?.( 'img' ) || link?.querySelector( 'img' );
+	const imageId = Number( img?.className.match( /\bwp-image-(\d+)\b/ )?.[ 1 ] );
+	if ( imageId ) {
+		const index = state.photos.findIndex( ( photo ) => photo.imageId === imageId );
+		if ( index >= 0 ) {
+			return index;
+		}
+	}
+	if ( ! link ) {
+		return -1;
+	}
+	const key = pathKey( link.href );
+	return state.photos.findIndex( ( photo ) => ! photo.imageId && pathKey( photo.url ) === key );
 };
 
 const { state, actions } = store( 'photos', {
@@ -51,7 +77,8 @@ const { state, actions } = store( 'photos', {
 			}
 			if ( ! state.isOpen ) {
 				pageTitle = document.title;
-				pageUrl = window.location.href;
+				// Opened from a #photo-<id> link: closing returns to the plain album URL.
+				pageUrl = window.location.href.replace( /#photo-\d+$/, '' );
 			}
 			state.currentIndex = index;
 			document.title = `${ photo.title } – ${ state.siteName }`;
@@ -93,17 +120,15 @@ const { state, actions } = store( 'photos', {
 			if ( event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey ) {
 				return;
 			}
-			const link = event.target.closest?.( 'a[href]' );
-			if ( ! link || link.closest( '.photos-viewer' ) ) {
+			if ( event.target.closest?.( '.photos-viewer' ) ) {
 				return;
 			}
-			const key = pathKey( link.href );
-			const index = state.photos.findIndex( ( photo ) => pathKey( photo.url ) === key );
+			const index = findPhotoIndex( event.target );
 			if ( index < 0 ) {
 				return;
 			}
 			event.preventDefault();
-			opener = link;
+			opener = event.target.closest( 'a[href]' );
 			actions.show( index, 'push' );
 		} ),
 		onKeydown: withSyncEvent( ( event ) => {
@@ -129,11 +154,13 @@ const { state, actions } = store( 'photos', {
 				actions.close();
 			}
 		} ),
+		// Back/forward between viewer entries, or a jump to a #photo-<id> link on this page.
 		onPopstate( event ) {
-			const index = event.state?.photosViewer;
-			if ( Number.isInteger( index ) && state.photos[ index ] ) {
+			const fromViewer = event.state?.photosViewer;
+			const index = Number.isInteger( fromViewer ) ? fromViewer : photoIndexFromHash();
+			if ( index >= 0 && state.photos[ index ] ) {
 				actions.show( index, 'none' );
-				pushedEntry = true;
+				pushedEntry = Number.isInteger( fromViewer );
 			} else if ( state.isOpen ) {
 				actions.hide();
 			}
@@ -155,6 +182,13 @@ const { state, actions } = store( 'photos', {
 		},
 	},
 	callbacks: {
+		// A link to one album photo (album URL + #photo-<id>) opens it right away.
+		openFromHash() {
+			const index = photoIndexFromHash();
+			if ( index >= 0 ) {
+				actions.show( index, 'none' );
+			}
+		},
 		syncDialog() {
 			const { ref } = getElement();
 			if ( state.isOpen && ! ref.open ) {
