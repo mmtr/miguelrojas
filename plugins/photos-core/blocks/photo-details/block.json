@@ -1,0 +1,20 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "photos/photo-details",
+	"title": "Photo Details",
+	"category": "media",
+	"icon": "camera",
+	"description": "Location, date taken and camera settings of the post's featured photo.",
+	"textdomain": "photos-core",
+	"usesContext": [ "postId" ],
+	"supports": {
+		"html": false,
+		"align": [ "wide" ],
+		"spacing": { "margin": true, "padding": true },
+		"typography": { "fontSize": true }
+	},
+	"editorScript": "file:./edit.js",
+	"style": "photos-details",
+	"render": "file:./render.php"
+}

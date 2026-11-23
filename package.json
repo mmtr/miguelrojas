@@ -1,0 +1,17 @@
+{
+  "name": "photos-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Personal photography site built on WordPress.",
+  "scripts": {
+    "start": "wp-env start",
+    "stop": "wp-env stop",
+    "setup": "wp-env run cli wp theme activate photos --quiet && wp-env run cli wp rewrite structure '/%postname%/' --hard --quiet && wp-env run cli wp option update posts_per_page 24 --quiet",
+    "wp": "wp-env run cli wp",
+    "logs": "wp-env logs",
+    "reset": "wp-env clean all"
+  },
+  "devDependencies": {
+    "@wordpress/env": "^12.2.0"
+  }
+}

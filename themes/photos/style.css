@@ -1,0 +1,42 @@
+/*
+Theme Name: Photos
+Description: Theme for a personal photography site.
+Version: 0.1.0
+Requires at least: 6.7
+Requires PHP: 8.1
+License: GPL-2.0-or-later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: photos
+*/
+
+/* Photo grid: clip zoomed thumbnails and add a subtle hover zoom. */
+.photos-grid .wp-block-post-featured-image {
+	margin: 0;
+	overflow: hidden;
+}
+
+.photos-grid .wp-block-post-featured-image img {
+	transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.photos-grid .wp-block-post-featured-image a:hover img,
+.photos-grid .wp-block-post-featured-image a:focus-visible img {
+	transform: scale(1.03);
+	opacity: 0.92;
+}
+
+/* Single photo: fit the whole image on screen, whatever its orientation. */
+.wp-block-post-featured-image.photos-hero img {
+	display: block;
+	width: auto;
+	max-width: 100%;
+	height: auto;
+	max-height: 85vh;
+	margin-inline: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.photos-grid .wp-block-post-featured-image img {
+		transition: none;
+	}
+}
