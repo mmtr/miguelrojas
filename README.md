@@ -22,6 +22,10 @@ Other commands:
 - `npm run logs` shows container logs
 - `npm run reset` wipes the local database and uploads (destructive)
 
+## Going live
+
+Hosted on WordPress.com (Personal plan) at `miguelrojas.photo`. Step-by-step setup: [docs/go-live.md](docs/go-live.md). `npm run package` builds the theme and plugin zips for uploading.
+
 ## Publishing a photo
 
 Create a post, set the photo as its **featured image**, write the description in the post body and fill in **Location** in the "Photo details" sidebar panel. Camera, lens, focal length, aperture, shutter speed, ISO and date taken are read from the photo file on upload.

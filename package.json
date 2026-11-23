@@ -9,7 +9,8 @@
     "setup": "wp-env run cli wp theme activate photos --quiet && wp-env run cli wp rewrite structure '/%postname%/' --hard --quiet && wp-env run cli wp option update posts_per_page 24 --quiet",
     "wp": "wp-env run cli wp",
     "logs": "wp-env logs",
-    "reset": "wp-env clean all"
+    "reset": "wp-env clean all",
+    "package": "sh bin/package.sh"
   },
   "devDependencies": {
     "@wordpress/env": "^12.2.0"
