@@ -9,6 +9,35 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: photos
 */
 
+/* Logo: "Miguel" in the text color, "Rojas" in the accent red. */
+.photos-logo {
+	display: inline-flex;
+	color: var(--wp--preset--color--contrast);
+	text-decoration: none;
+}
+
+.photos-logo:hover,
+.photos-logo:focus-visible {
+	color: var(--wp--preset--color--contrast);
+	opacity: 0.8;
+}
+
+.photos-logo__svg {
+	display: block;
+	width: auto;
+	height: 1.125rem;
+}
+
+.photos-logo__last {
+	color: var(--wp--preset--color--accent);
+}
+
+@media (max-width: 480px) {
+	.photos-logo__svg {
+		height: 0.875rem;
+	}
+}
+
 /* Photo grid: clip zoomed thumbnails and add a subtle hover zoom. */
 .photos-grid .wp-block-post-featured-image {
 	margin: 0;

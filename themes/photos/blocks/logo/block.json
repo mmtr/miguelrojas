@@ -1,0 +1,16 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "photos/logo",
+	"title": "Miguel Rojas Logo",
+	"category": "theme",
+	"icon": "art",
+	"description": "The site's wordmark, linking to the home page. Drawn from the theme's logo file, so it needs no upload.",
+	"textdomain": "photos",
+	"supports": {
+		"html": false,
+		"multiple": true
+	},
+	"editorScript": "file:./edit.js",
+	"render": "file:./render.php"
+}

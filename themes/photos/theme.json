@@ -15,7 +15,8 @@
 				{ "slug": "base", "name": "Base", "color": "#f6f5f2" },
 				{ "slug": "contrast", "name": "Contrast", "color": "#1b1b1a" },
 				{ "slug": "muted", "name": "Muted", "color": "#6f6d68" },
-				{ "slug": "line", "name": "Line", "color": "#e2e0db" }
+				{ "slug": "line", "name": "Line", "color": "#e2e0db" },
+				{ "slug": "accent", "name": "Accent (logo red)", "color": "#d7191f" }
 			]
 		},
 		"typography": {

@@ -34,6 +34,19 @@ The home grid shows the album's cover (the featured image, or the first photo if
 
 The original file you upload stays public, including any GPS coordinates in it. Remove location data before uploading (on macOS: Photos → File → Export with "Include location information" off).
 
+## Logo
+
+The Miguel Rojas logo is drawn from simple geometry by `brand/build.py` (no font involved). Change the letter shapes, weight or red there, then rebuild:
+
+```bash
+python3 brand/build.py        # SVGs in brand/svg/, plus the theme's logo.svg and favicon.svg
+python3 brand/export_png.py   # PNGs in brand/png/ (uses Google Chrome to render)
+```
+
+- Watermark for Lightroom/Photoshop: `brand/png/watermark-white-shadow.png` (or `watermark-white.png` / `watermark-black.png`).
+- Site Icon: upload `brand/png/site-icon-512.png` in WordPress on the live site (until then the theme uses `assets/favicon.svg`).
+- The header shows the logo through the theme's "Miguel Rojas Logo" block; "Rojas" uses the theme's Accent color.
+
 ## Layout
 
 - `plugins/photos-core/`: site features that don't depend on the theme
