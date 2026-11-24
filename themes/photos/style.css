@@ -38,13 +38,32 @@ Text Domain: photos
 	}
 }
 
-/* Photo grid: clip zoomed thumbnails and add a subtle hover zoom. */
+/*
+ * Square thumbnails trimmed at the bottom: the watermark sits in the bottom-right
+ * corner, within the bottom 5% of a landscape photo, so each thumbnail is drawn 6%
+ * taller than its square and the overflow is clipped. Portrait photos are cropped from
+ * the middle and never show it. The full photo (viewer, photo page) keeps it.
+ */
+.photos-grid {
+	--photos-thumb-height: 106%;
+}
+
 .photos-grid .wp-block-post-featured-image {
 	margin: 0;
+	aspect-ratio: 1;
 	overflow: hidden;
 }
 
+.photos-grid .wp-block-post-featured-image a {
+	display: block;
+	height: 100%;
+}
+
 .photos-grid .wp-block-post-featured-image img {
+	/* !important: the block sets a square aspect-ratio inline on the image itself. */
+	height: var(--photos-thumb-height) !important;
+	aspect-ratio: auto !important;
+	object-fit: cover;
 	transition: transform 0.4s ease, opacity 0.4s ease;
 }
 
@@ -83,6 +102,7 @@ Text Domain: photos
 }
 
 .photos-album .wp-block-gallery.has-nested-images figure.wp-block-image img {
+	height: 106% !important; /* Trims the watermark off the bottom, as in the home grid. */
 	object-fit: cover;
 	transition: transform 0.4s ease, opacity 0.4s ease;
 }
