@@ -4,4 +4,4 @@ dist/
 *.log
 .wp-env.override.json
 .deploy.env
-photos/
+/photos/
