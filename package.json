@@ -10,7 +10,8 @@
     "wp": "wp-env run cli wp",
     "logs": "wp-env logs",
     "reset": "wp-env clean all",
-    "package": "sh bin/package.sh"
+    "package": "sh bin/package.sh",
+    "deploy": "bash bin/deploy.sh"
   },
   "devDependencies": {
     "@wordpress/env": "^12.2.0"

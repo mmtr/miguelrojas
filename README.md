@@ -26,6 +26,16 @@ Other commands:
 
 Hosted on WordPress.com (Personal plan) at `miguelrojas.photo`. Step-by-step setup: [docs/go-live.md](docs/go-live.md). `npm run package` builds the theme and plugin zips for uploading.
 
+### Deploying updates
+
+```bash
+npm run deploy
+```
+
+Packages `themes/photos` and `plugins/photos-core` and installs them on the live site over SSH (WP-CLI), replacing the previous version. It deploys what's committed: with uncommitted changes in `themes/` or `plugins/` it stops, unless you run `npm run deploy -- --allow-dirty`. Content, photos and settings on the live site aren't touched.
+
+Needs SSH enabled for the site with your key attached (WordPress.com → Settings → SFTP/SSH). Local settings go in `.deploy.env` (copy `.deploy.env.example`): the SSH host, and optionally which key to use.
+
 ## Publishing a photo
 
 Create a post, set the photo as its **featured image**, write the description in the post body and fill in **Location** in the "Photo details" sidebar panel. Camera, lens, focal length, aperture, shutter speed, ISO and date taken are read from the photo file on upload.
