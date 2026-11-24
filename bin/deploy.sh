@@ -44,6 +44,8 @@ COPYFILE_DISABLE=1 tar --no-xattrs -C dist -cf - photos-theme.zip photos-core.zi
 	wp plugin install "$dir/photos-core.zip" --force
 	wp plugin is-active photos-core || wp plugin activate photos-core
 	wp cache flush
+	# WordPress.com also caches whole pages for visitors; clear them so changes show at once.
+	wp edge-cache purge --domain --yes || echo "Edge cache not purged; pages may update a few minutes late."
 	wp theme list --name=photos --fields=name,status,version
 	wp plugin list --name=photos-core --fields=name,status,version
 '
