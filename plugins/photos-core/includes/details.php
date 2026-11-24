@@ -202,9 +202,41 @@ function photos_get_details_items( $post_id ) {
 }
 
 /**
+ * Number of published photo posts (posts with a featured image), optionally only those
+ * newer than a date. Photos are numbered across the whole site, newest first, so the
+ * viewer and the photo page agree ("27 / 30") however many grid pages are loaded.
+ *
+ * @param string|null $newer_than Post date (Y-m-d H:i:s) to count photos after.
+ * @return int
+ */
+function photos_count_photo_posts( $newer_than = null ) {
+	$args = array(
+		'post_type'      => 'post',
+		'post_status'    => 'publish',
+		'fields'         => 'ids',
+		'posts_per_page' => 1,
+		'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery
+			array(
+				'key'     => '_thumbnail_id',
+				'compare' => 'EXISTS',
+			),
+		),
+	);
+	if ( $newer_than ) {
+		$args['date_query'] = array(
+			array(
+				'after'     => $newer_than,
+				'inclusive' => false,
+			),
+		);
+	}
+	return (int) ( new WP_Query( $args ) )->found_posts;
+}
+
+/**
  * Where a photo post sits in the home grid (newest first, mixing photo posts and albums):
- * the URL of its grid page, so closing a photo page returns there, and its position among
- * that page's photos, counted like the viewer does ("3 / 24").
+ * the URL of its grid page, so closing a photo page returns there, and its number among
+ * all photos ("27 / 30"), as the viewer shows it.
  *
  * @param WP_Post $post Post.
  * @return array { url, index (1-based, or null), total }
@@ -226,34 +258,13 @@ function photos_get_grid_position( $post ) {
 			'no_found_rows'  => true,
 		)
 	);
-	$page = intdiv( $newer->post_count, $per_page ) + 1;
-
-	// The viewer steps through that page's photo posts only (albums open their own page).
-	$on_page = get_posts(
-		array(
-			'post_type'      => array( 'post', 'album' ),
-			'post_status'    => 'publish',
-			'posts_per_page' => $per_page,
-			'paged'          => $page,
-			'orderby'        => 'date',
-			'order'          => 'DESC',
-			'fields'         => 'ids',
-		)
-	);
-	$photos = array_values(
-		array_filter(
-			$on_page,
-			static function ( $id ) {
-				return 'post' === get_post_type( $id ) && has_post_thumbnail( $id );
-			}
-		)
-	);
-	$index  = array_search( $post->ID, $photos, true );
+	$page     = intdiv( $newer->post_count, $per_page ) + 1;
+	$is_photo = 'post' === $post->post_type && has_post_thumbnail( $post );
 
 	return array(
 		'url'   => $page > 1 ? home_url( "/page/$page/" ) : home_url( '/' ),
-		'index' => false === $index ? null : $index + 1,
-		'total' => count( $photos ),
+		'index' => $is_photo ? photos_count_photo_posts( $post->post_date ) + 1 : null,
+		'total' => photos_count_photo_posts(),
 	);
 }
 

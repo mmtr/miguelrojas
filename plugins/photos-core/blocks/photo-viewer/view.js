@@ -1,12 +1,22 @@
 /**
  * Photo viewer: opens grid photos in a full-screen <dialog>, keeps the URL in sync with the
  * photo being shown, and supports Esc, arrow keys, swipe and the browser's back button.
+ *
+ * It also turns the grid's pagination into infinite scroll: near the bottom, the next
+ * grid page is fetched, its photos are appended and added to the viewer. The page links
+ * stay in the HTML as the fallback without JavaScript (or if loading fails).
  */
 import { store, getElement, withSyncEvent } from '@wordpress/interactivity';
 
-const EMPTY = { title: '', description: '', url: null, imageId: null, items: [], src: null, srcset: null, width: null, height: null, alt: '' };
+const EMPTY = { title: '', description: '', url: null, imageId: null, index: null, items: [], src: null, srcset: null, width: null, height: null, alt: '' };
 const PHOTO_HASH = /^#photo-(\d+)$/;
 const SWIPE_DISTANCE = 50;
+const LOAD_AHEAD = 1000; // Start loading the next page this many pixels before the end.
+
+let nextPageUrl = null; // Next grid page to load, from the pagination's "next" link.
+let loading = null; // The page load in progress, if any.
+let sentinel = null; // The pagination element; reaching it loads the next page.
+let observer = null;
 
 let pushedEntry = false; // The open viewer added a history entry, so closing means going back.
 let opener = null; // Link that opened the viewer; gets focus back when it closes.
@@ -51,6 +61,73 @@ const findPhotoIndex = ( target ) => {
 	return state.photos.findIndex( ( photo ) => ! photo.imageId && pathKey( photo.url ) === key );
 };
 
+const nextLinkIn = ( root ) => root.querySelector( '.photos-grid .wp-block-query-pagination-next' )?.href || null;
+
+const stopInfiniteScroll = ( showLinks ) => {
+	observer?.disconnect();
+	observer = null;
+	if ( showLinks ) {
+		document.querySelector( '.photos-grid' )?.classList.remove( 'is-infinite' );
+	} else {
+		sentinel?.remove();
+	}
+	nextPageUrl = null;
+};
+
+// Fetch the next grid page, append its items and add its photos to the viewer.
+// Resolves to true when photos were added.
+const loadNextPage = () => {
+	if ( ! nextPageUrl ) {
+		return Promise.resolve( false );
+	}
+	if ( loading ) {
+		return loading;
+	}
+	loading = ( async () => {
+		try {
+			const response = await fetch( nextPageUrl, { credentials: 'same-origin' } );
+			if ( ! response.ok ) {
+				throw new Error( `HTTP ${ response.status }` );
+			}
+			const doc = new DOMParser().parseFromString( await response.text(), 'text/html' );
+			const list = document.querySelector( '.photos-grid .wp-block-post-template' );
+			for ( const item of doc.querySelectorAll( '.photos-grid .wp-block-post-template > li' ) ) {
+				list.append( document.importNode( item, true ) );
+			}
+
+			// The fetched page carries its photos in the same viewer state: add the new ones.
+			const data = JSON.parse( doc.getElementById( 'wp-script-module-data-@wordpress/interactivity' )?.textContent || '{}' );
+			const known = new Set( state.photos.map( ( photo ) => photo.url ) );
+			const added = ( data?.state?.photos?.photos || [] ).filter( ( photo ) => ! known.has( photo.url ) );
+			state.photos.push( ...added );
+			state.totalPhotos = state.totalPhotos || data?.state?.photos?.totalPhotos || null;
+
+			nextPageUrl = nextLinkIn( doc );
+			if ( ! nextPageUrl ) {
+				stopInfiniteScroll( false );
+			}
+			return added.length > 0;
+		} catch ( error ) {
+			// Fall back to the page links.
+			stopInfiniteScroll( true );
+			return false;
+		} finally {
+			loading = null;
+			state.hasMorePages = Boolean( nextPageUrl );
+		}
+	} )();
+	return loading;
+};
+
+// Keep loading while the end of the grid is still within reach (short pages, tall screens).
+const loadWhileNearEnd = async () => {
+	while ( sentinel?.isConnected && nextPageUrl && sentinel.getBoundingClientRect().top < window.innerHeight + LOAD_AHEAD ) {
+		if ( ! ( await loadNextPage() ) ) {
+			break;
+		}
+	}
+};
+
 const { state, actions } = store( 'photos', {
 	state: {
 		get isOpen() {
@@ -62,11 +139,19 @@ const { state, actions } = store( 'photos', {
 		get hasPrev() {
 			return state.currentIndex > 0;
 		},
+		// Also true at the last loaded photo when more grid pages can be loaded.
 		get hasNext() {
-			return state.isOpen && state.currentIndex < state.photos.length - 1;
+			return state.isOpen && ( state.currentIndex < state.photos.length - 1 || state.hasMorePages );
 		},
+		// Home grid photos carry their number across the whole site; album photos don't.
 		get position() {
-			return state.isOpen ? `${ state.currentIndex + 1 } / ${ state.photos.length }` : '';
+			if ( ! state.isOpen ) {
+				return '';
+			}
+			const { index } = state.current;
+			return index && state.totalPhotos
+				? `${ index } / ${ state.totalPhotos }`
+				: `${ state.currentIndex + 1 } / ${ state.photos.length }`;
 		},
 	},
 	actions: {
@@ -112,8 +197,17 @@ const { state, actions } = store( 'photos', {
 			}
 		},
 		next() {
-			if ( state.hasNext ) {
-				actions.show( state.currentIndex + 1, 'replace' );
+			const index = state.currentIndex + 1;
+			if ( state.photos[ index ] ) {
+				actions.show( index, 'replace' );
+			} else if ( state.hasMorePages ) {
+				// At the last loaded photo: load the next grid page, then move on.
+				loadNextPage().then( () => {
+					state.hasMorePages = Boolean( nextPageUrl );
+					if ( state.isOpen && state.photos[ index ] ) {
+						actions.show( index, 'replace' );
+					}
+				} );
 			}
 		},
 		openFromLink: withSyncEvent( ( event ) => {
@@ -182,6 +276,27 @@ const { state, actions } = store( 'photos', {
 		},
 	},
 	callbacks: {
+		// Replace the grid's page links with loading as you scroll.
+		initInfiniteScroll() {
+			sentinel = document.querySelector( '.photos-grid .wp-block-query-pagination' );
+			nextPageUrl = nextLinkIn( document );
+			state.hasMorePages = Boolean( nextPageUrl );
+			if ( ! sentinel || ! nextPageUrl || ! ( 'IntersectionObserver' in window ) ) {
+				return;
+			}
+			document.querySelector( '.photos-grid' ).classList.add( 'is-infinite' );
+			observer = new IntersectionObserver(
+				( entries ) => {
+					if ( entries.some( ( entry ) => entry.isIntersecting ) ) {
+						loadWhileNearEnd().then( () => {
+							state.hasMorePages = Boolean( nextPageUrl );
+						} );
+					}
+				},
+				{ rootMargin: `0px 0px ${ LOAD_AHEAD }px 0px` }
+			);
+			observer.observe( sentinel );
+		},
 		// A link to one album photo (album URL + #photo-<id>) opens it right away.
 		openFromHash() {
 			const index = photoIndexFromHash();

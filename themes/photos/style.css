@@ -67,6 +67,17 @@ Text Domain: photos
 	transition: transform 0.4s ease, opacity 0.4s ease;
 }
 
+/*
+ * Infinite scroll (turned on by the photo viewer's script): the page links stay in the
+ * page, invisible, as the point that triggers loading more; without JavaScript they show.
+ */
+.photos-grid.is-infinite .wp-block-query-pagination {
+	visibility: hidden;
+	height: 1px;
+	margin: 0;
+	overflow: hidden;
+}
+
 .photos-grid .wp-block-post-featured-image a:hover img,
 .photos-grid .wp-block-post-featured-image a:focus-visible img {
 	transform: scale(1.03);
