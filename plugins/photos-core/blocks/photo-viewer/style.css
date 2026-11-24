@@ -73,6 +73,22 @@ dialog.photos-viewer[open],
 	height: var(--photos-viewer-height);
 }
 
+/*
+ * Quick clicks on the arrows count as double/triple clicks, which made the browser
+ * select (and tint) the photo. The photo area and buttons can't be selected; the
+ * details panel still can.
+ */
+.photos-viewer__stage,
+.photos-viewer__close {
+	-webkit-user-select: none;
+	user-select: none;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.photos-viewer__image {
+	-webkit-user-drag: none;
+}
+
 .photos-viewer__image {
 	display: block;
 	width: auto;
