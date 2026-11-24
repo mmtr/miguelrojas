@@ -82,6 +82,58 @@ dialog.photos-viewer[open],
 	object-fit: contain;
 }
 
+/* While the next photo loads, the current one dims and a spinner shows (after a short
+   delay, so fast loads don't flash it). */
+.photos-viewer__image {
+	transition: opacity 0.2s ease;
+}
+
+.photos-viewer.is-loading .photos-viewer__image {
+	opacity: 0.35;
+}
+
+.photos-viewer__spinner {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	width: 2.5rem;
+	height: 2.5rem;
+	margin: auto;
+	box-sizing: border-box;
+	border: 3px solid rgb(255 255 255 / 0.2);
+	border-top-color: rgb(255 255 255 / 0.9);
+	border-radius: 50%;
+	pointer-events: none;
+	animation: photos-viewer-spin 0.8s linear infinite, photos-viewer-appear 0.2s ease 0.15s both;
+}
+
+@keyframes photos-viewer-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes photos-viewer-appear {
+	from {
+		opacity: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.photos-viewer__spinner {
+		animation: photos-viewer-appear 0.2s ease 0.15s both;
+	}
+}
+
+.photos-viewer__visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
 .photos-viewer__panel {
 	overflow-y: auto;
 	padding: 4.5rem 2rem 2rem;

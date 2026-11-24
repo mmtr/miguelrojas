@@ -128,10 +128,34 @@ const loadWhileNearEnd = async () => {
 	}
 };
 
+// Must match the viewer image's sizes attribute, so preloading fetches the same file.
+const IMAGE_SIZES = '(min-width: 900px) calc(100vw - 22rem), 100vw';
+const ready = new Set(); // Photos (by src) whose image is downloaded and decoded.
+let navigation = 0; // Bumped on every navigation, so only the latest one is shown.
+let target = -1; // Photo being navigated to (shown or still loading); arrows step from it.
+
+// Download and decode a photo's image off-screen. Always resolves, even on errors.
+const preload = ( photo ) => {
+	if ( ! photo?.src || ready.has( photo.src ) ) {
+		return Promise.resolve();
+	}
+	const img = new Image();
+	img.sizes = IMAGE_SIZES;
+	if ( photo.srcset ) {
+		img.srcset = photo.srcset;
+	}
+	img.src = photo.src;
+	return img
+		.decode()
+		.catch( () => {} )
+		.then( () => ready.add( photo.src ) );
+};
+
 const { state, actions, callbacks } = store( 'photos', {
 	state: {
+		// Open while a photo is shown, or while the first one is still loading.
 		get isOpen() {
-			return state.currentIndex >= 0;
+			return state.currentIndex >= 0 || state.opening;
 		},
 		get current() {
 			return state.photos[ state.currentIndex ] || EMPTY;
@@ -155,6 +179,8 @@ const { state, actions, callbacks } = store( 'photos', {
 		},
 	},
 	actions: {
+		// Show a photo once its image is ready, so the image, details, title and URL all
+		// change together. Until then the current photo stays (dimmed, with a spinner).
 		show( index, historyMode ) {
 			const photo = state.photos[ index ];
 			if ( ! photo ) {
@@ -164,24 +190,48 @@ const { state, actions, callbacks } = store( 'photos', {
 				pageTitle = document.title;
 				// Opened from a #photo-<id> link: closing returns to the plain album URL.
 				pageUrl = window.location.href.replace( /#photo-\d+$/, '' );
+				state.opening = true;
 			}
-			state.currentIndex = index;
-			document.title = `${ photo.title } – ${ state.siteName }`;
+			const thisNavigation = ++navigation;
+			target = index;
+			state.loading = ! ready.has( photo.src );
 
-			if ( historyMode === 'push' ) {
-				window.history.pushState( historyState( index ), '', photo.url );
-				pushedEntry = true;
-			} else if ( historyMode === 'replace' ) {
-				window.history.replaceState( historyState( index ), '', photo.url );
-			}
+			preload( photo ).then( () => {
+				if ( thisNavigation !== navigation ) {
+					return; // Another photo was requested meanwhile.
+				}
+				state.loading = false;
+				state.opening = false;
+				state.currentIndex = index;
+				document.title = `${ photo.title } – ${ state.siteName }`;
+
+				if ( historyMode === 'push' ) {
+					window.history.pushState( historyState( index ), '', photo.url );
+					pushedEntry = true;
+				} else if ( historyMode === 'replace' ) {
+					window.history.replaceState( historyState( index ), '', photo.url );
+				}
+
+				// Get the neighbours ready so the next arrow press is instant.
+				preload( state.photos[ index + 1 ] );
+				preload( state.photos[ index - 1 ] );
+			} );
 		},
 		hide() {
+			navigation++;
+			target = -1;
+			state.loading = false;
+			state.opening = false;
 			state.currentIndex = -1;
 			pushedEntry = false;
 			document.title = pageTitle;
 		},
 		close() {
 			if ( ! state.isOpen ) {
+				return;
+			}
+			if ( state.currentIndex < 0 ) {
+				actions.hide(); // Still loading the first photo: just cancel.
 				return;
 			}
 			if ( pushedEntry ) {
@@ -192,12 +242,13 @@ const { state, actions, callbacks } = store( 'photos', {
 			actions.hide();
 		},
 		prev() {
-			if ( state.hasPrev ) {
-				actions.show( state.currentIndex - 1, 'replace' );
+			const index = ( target >= 0 ? target : state.currentIndex ) - 1;
+			if ( index >= 0 ) {
+				actions.show( index, 'replace' );
 			}
 		},
 		next() {
-			const index = state.currentIndex + 1;
+			const index = ( target >= 0 ? target : state.currentIndex ) + 1;
 			if ( state.photos[ index ] ) {
 				actions.show( index, 'replace' );
 			} else if ( state.hasMorePages ) {

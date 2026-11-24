@@ -63,6 +63,7 @@ $photos_icon = static function ( $path ) {
 	aria-labelledby="photos-viewer-title"
 	data-wp-interactive="photos"
 	data-wp-init="callbacks.init"
+	data-wp-class--is-loading="state.loading"
 	data-wp-watch="callbacks.syncDialog"
 	data-wp-on--cancel="actions.onCancel"
 	data-wp-on-document--click="actions.openFromLink"
@@ -93,6 +94,9 @@ $photos_icon = static function ( $path ) {
 			data-wp-bind--height="state.current.height"
 			data-wp-bind--alt="state.current.alt"
 		>
+		<span class="photos-viewer__spinner" role="status" data-wp-bind--hidden="!state.loading">
+			<span class="photos-viewer__visually-hidden"><?php esc_html_e( 'Loading photo', 'photos-core' ); ?></span>
+		</span>
 		<button type="button" class="photos-viewer__next" data-wp-on--click="actions.next" data-wp-bind--hidden="!state.hasNext" aria-label="<?php esc_attr_e( 'Next photo', 'photos-core' ); ?>">
 			<?php echo $photos_icon( 'M9 5l7 7-7 7' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 		</button>
