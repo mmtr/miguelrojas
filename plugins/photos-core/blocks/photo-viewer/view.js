@@ -128,7 +128,7 @@ const loadWhileNearEnd = async () => {
 	}
 };
 
-const { state, actions } = store( 'photos', {
+const { state, actions, callbacks } = store( 'photos', {
 	state: {
 		get isOpen() {
 			return state.currentIndex >= 0;
@@ -276,6 +276,11 @@ const { state, actions } = store( 'photos', {
 		},
 	},
 	callbacks: {
+		// One init directive (named data-wp-init--* variants aren't run by every version).
+		init() {
+			callbacks.openFromHash();
+			callbacks.initInfiniteScroll();
+		},
 		// Replace the grid's page links with loading as you scroll.
 		initInfiniteScroll() {
 			sentinel = document.querySelector( '.photos-grid .wp-block-query-pagination' );
