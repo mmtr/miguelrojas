@@ -4,7 +4,7 @@
  */
 import { store, getElement, withSyncEvent } from '@wordpress/interactivity';
 
-const EMPTY = { title: '', description: '', url: null, link: null, imageId: null, items: [], src: null, srcset: null, width: null, height: null, alt: '' };
+const EMPTY = { title: '', description: '', url: null, imageId: null, items: [], src: null, srcset: null, width: null, height: null, alt: '' };
 const PHOTO_HASH = /^#photo-(\d+)$/;
 const SWIPE_DISTANCE = 50;
 

@@ -92,6 +92,5 @@ $photos_icon = static function ( $path ) {
 				</div>
 			</template>
 		</dl>
-		<a class="photos-viewer__link" data-wp-bind--href="state.current.link" data-wp-bind--hidden="!state.current.link"><?php esc_html_e( 'Open photo page', 'photos-core' ); ?></a>
 	</aside>
 </dialog>

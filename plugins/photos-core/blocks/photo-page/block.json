@@ -1,0 +1,19 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "photos/photo-page",
+	"title": "Photo Page",
+	"category": "media",
+	"icon": "format-image",
+	"description": "Shows a photo post like the photo viewer: the photo on a dark background, its details beside it, arrows to the newer and older photo.",
+	"textdomain": "photos-core",
+	"usesContext": [ "postId" ],
+	"supports": {
+		"html": false,
+		"interactivity": true
+	},
+	"editorScript": "file:./edit.js",
+	"viewScriptModule": "file:./view.js",
+	"style": [ "photos-viewer" ],
+	"render": "file:./render.php"
+}

@@ -202,6 +202,62 @@ function photos_get_details_items( $post_id ) {
 }
 
 /**
+ * Where a photo post sits in the home grid (newest first, mixing photo posts and albums):
+ * the URL of its grid page, so closing a photo page returns there, and its position among
+ * that page's photos, counted like the viewer does ("3 / 24").
+ *
+ * @param WP_Post $post Post.
+ * @return array { url, index (1-based, or null), total }
+ */
+function photos_get_grid_position( $post ) {
+	$per_page = max( 1, (int) get_option( 'posts_per_page' ) );
+	$newer    = new WP_Query(
+		array(
+			'post_type'      => array( 'post', 'album' ),
+			'post_status'    => 'publish',
+			'date_query'     => array(
+				array(
+					'after'     => $post->post_date,
+					'inclusive' => false,
+				),
+			),
+			'fields'         => 'ids',
+			'posts_per_page' => -1,
+			'no_found_rows'  => true,
+		)
+	);
+	$page = intdiv( $newer->post_count, $per_page ) + 1;
+
+	// The viewer steps through that page's photo posts only (albums open their own page).
+	$on_page = get_posts(
+		array(
+			'post_type'      => array( 'post', 'album' ),
+			'post_status'    => 'publish',
+			'posts_per_page' => $per_page,
+			'paged'          => $page,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+			'fields'         => 'ids',
+		)
+	);
+	$photos = array_values(
+		array_filter(
+			$on_page,
+			static function ( $id ) {
+				return 'post' === get_post_type( $id ) && has_post_thumbnail( $id );
+			}
+		)
+	);
+	$index  = array_search( $post->ID, $photos, true );
+
+	return array(
+		'url'   => $page > 1 ? home_url( "/page/$page/" ) : home_url( '/' ),
+		'index' => false === $index ? null : $index + 1,
+		'total' => count( $photos ),
+	);
+}
+
+/**
  * Post content as plain text, for places that can't render HTML (the viewer).
  *
  * @param WP_Post $post Post.
@@ -216,7 +272,7 @@ function photos_get_description( $post ) {
  * Everything the viewer needs to show one image, or null if the image is missing.
  *
  * @param int   $image_id Attachment ID.
- * @param array $fields   url (history URL), link ("Open photo page"), imageId, title, description, items, alt.
+ * @param array $fields   url (history URL), imageId, title, description, items, alt.
  * @return array|null
  */
 function photos_build_viewer_photo( $image_id, $fields ) {
@@ -228,7 +284,6 @@ function photos_build_viewer_photo( $image_id, $fields ) {
 	$fields = array_merge(
 		array(
 			'url'         => null,
-			'link'        => null,
 			'imageId'     => null,
 			'title'       => '',
 			'description' => '',
@@ -268,7 +323,6 @@ function photos_get_viewer_photo( $post ) {
 		(int) get_post_thumbnail_id( $post ),
 		array(
 			'url'         => $url,
-			'link'        => $url,
 			'title'       => html_entity_decode( get_the_title( $post ), ENT_QUOTES, 'UTF-8' ),
 			'description' => photos_get_description( $post ),
 			'items'       => photos_get_details_items( $post->ID ),

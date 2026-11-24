@@ -29,8 +29,17 @@ add_action(
 			(string) filemtime( __DIR__ . '/assets/details.css' )
 		);
 
+		// Shared by the viewer dialog and the photo page, which use the same layout.
+		wp_register_style(
+			'photos-viewer',
+			plugins_url( 'blocks/photo-viewer/style.css', __FILE__ ),
+			array( 'photos-details' ),
+			(string) filemtime( __DIR__ . '/blocks/photo-viewer/style.css' )
+		);
+
 		register_block_type( __DIR__ . '/blocks/photo-details' );
 		register_block_type( __DIR__ . '/blocks/photo-viewer' );
+		register_block_type( __DIR__ . '/blocks/photo-page' );
 		register_block_type( __DIR__ . '/blocks/entry-label' );
 		register_block_type( __DIR__ . '/blocks/album-summary' );
 	}
