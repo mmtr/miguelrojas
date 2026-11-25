@@ -21,7 +21,8 @@ EXPORTS = [
     ("watermark-white-shadow.svg", "watermark-white-shadow.png", 3000),
     ("wordmark-black.svg", "watermark-black.png", 3000),
     ("wordmark-color.svg", "wordmark-color.png", 2000),
-    ("monogram-color.svg", "site-icon-512.png", 512),
+    ("watermark-viewfinder.svg", "watermark-viewfinder.png", 3000),
+    ("icon-viewfinder.svg", "site-icon-512.png", 512),
 ]
 
 

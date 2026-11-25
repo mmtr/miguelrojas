@@ -10,12 +10,15 @@ Text Domain: photos
 */
 
 /*
- * Logo: "Miguel" in the text color, "Rojas" in the accent red, and the tagline under it
- * at exactly its width (see blocks/logo/render.php).
+ * Logo: the name in the text color with the tagline under it at exactly its width (see
+ * blocks/logo/render.php), inside red viewfinder corners, like the photos' watermark.
  */
 .photos-brand {
 	--photos-logo-height: 1.125rem;
+	--photos-vf-arm: 20px;
+	--photos-vf-line: 2px;
 
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
@@ -40,8 +43,27 @@ Text Domain: photos
 	height: var(--photos-logo-height);
 }
 
-.photos-logo__last {
-	color: var(--wp--preset--color--accent);
+.photos-header .photos-brand {
+	padding: 18px 24px;
+}
+
+.photos-header .photos-brand::before {
+	--c: var(--wp--preset--color--accent);
+
+	content: "";
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background:
+		linear-gradient(var(--c) 0 0) left top / var(--photos-vf-arm) var(--photos-vf-line),
+		linear-gradient(var(--c) 0 0) left top / var(--photos-vf-line) var(--photos-vf-arm),
+		linear-gradient(var(--c) 0 0) right top / var(--photos-vf-arm) var(--photos-vf-line),
+		linear-gradient(var(--c) 0 0) right top / var(--photos-vf-line) var(--photos-vf-arm),
+		linear-gradient(var(--c) 0 0) left bottom / var(--photos-vf-arm) var(--photos-vf-line),
+		linear-gradient(var(--c) 0 0) left bottom / var(--photos-vf-line) var(--photos-vf-arm),
+		linear-gradient(var(--c) 0 0) right bottom / var(--photos-vf-arm) var(--photos-vf-line),
+		linear-gradient(var(--c) 0 0) right bottom / var(--photos-vf-line) var(--photos-vf-arm);
+	background-repeat: no-repeat;
 }
 
 .photos-tagline {
@@ -64,6 +86,11 @@ Text Domain: photos
 @media (max-width: 480px) {
 	.photos-brand {
 		--photos-logo-height: 1rem;
+		--photos-vf-arm: 16px;
+	}
+
+	.photos-header .photos-brand {
+		padding: 14px 18px;
 	}
 }
 
@@ -93,12 +120,12 @@ Text Domain: photos
 
 /*
  * Square thumbnails trimmed at the bottom: the watermark sits in the bottom-right
- * corner, within the bottom 5% of a landscape photo, so each thumbnail is drawn 6%
+ * corner, within the bottom 8% of a landscape photo, so each thumbnail is drawn 10%
  * taller than its square and the overflow is clipped. Portrait photos are cropped from
  * the middle and never show it. The full photo (viewer, photo page) keeps it.
  */
 .photos-grid {
-	--photos-thumb-height: 106%;
+	--photos-thumb-height: 110%;
 }
 
 .photos-grid .wp-block-post-featured-image {
@@ -215,7 +242,7 @@ Text Domain: photos
 }
 
 .photos-album .wp-block-gallery.has-nested-images figure.wp-block-image img {
-	height: 106% !important; /* Trims the watermark off the bottom, as in the home grid. */
+	height: 110% !important; /* Trims the watermark off the bottom, as in the home grid. */
 	object-fit: cover;
 	transition: transform 0.4s ease, opacity 0.4s ease;
 }

@@ -4,8 +4,10 @@
 //   swift bin/prepare-photos.swift --out photos/web --no-watermark photos/old.jpg
 //
 // - Long edge limited to --max pixels (default 3000); smaller photos keep their size.
-// - The white watermark (brand/png/watermark-white-shadow.png) goes in the bottom-right
-//   corner, sized from the photo's shorter side so it looks the same on every photo.
+// - The watermark (brand/png/watermark-viewfinder.png: the name in red viewfinder corners)
+//   goes in the bottom-right corner at 80% opacity, sized from the photo's shorter side
+//   so it looks the same on every photo. It stays within the bottom 8% of a landscape
+//   photo, which the site's grid thumbnails trim off.
 // - EXIF (camera, lens, settings, date), GPS and IPTC are copied; orientation is applied
 //   to the pixels; the embedded preview thumbnail (which would be unwatermarked) is dropped.
 // Originals are never modified. Run from the repository root.
@@ -34,7 +36,7 @@ guard !outDir.isEmpty, !inputs.isEmpty else {
 	exit(1)
 }
 
-let watermarkURL = URL(fileURLWithPath: "brand/png/watermark-white-shadow.png")
+let watermarkURL = URL(fileURLWithPath: "brand/png/watermark-viewfinder.png")
 guard let wmSource = CGImageSourceCreateWithURL(watermarkURL as CFURL, nil),
 	let watermark = CGImageSourceCreateImageAtIndex(wmSource, 0, nil)
 else {
@@ -80,10 +82,11 @@ for path in inputs {
 
 	if addWatermark {
 		let shortSide = Double(min(photo.width, photo.height))
-		let wmWidth = shortSide * 0.30
+		// The corners' box: a quarter of the short side wide, 3.4% in from the edges.
+		let wmWidth = shortSide * 0.2517
 		let wmHeight = wmWidth * Double(watermark.height) / Double(watermark.width)
-		let margin = shortSide * 0.025
-		ctx.setAlpha(0.85)
+		let margin = shortSide * 0.034
+		ctx.setAlpha(0.8)
 		// Core Graphics' origin is bottom-left: this is the bottom-right corner.
 		ctx.draw(watermark, in: CGRect(x: Double(photo.width) - margin - wmWidth, y: margin, width: wmWidth, height: wmHeight))
 	}

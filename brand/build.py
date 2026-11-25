@@ -198,6 +198,57 @@ def monogram(background, letters_color, side=300, radius=36):
     )
 
 
+def corners(x0, y0, x1, y1, arm, weight, color):
+    """Viewfinder corner brackets, drawn inside the box (x0, y0)-(x1, y1)."""
+    a, b, c, d = x0 + weight / 2, y0 + weight / 2, x1 - weight / 2, y1 - weight / 2
+    path = (
+        f"M{a:g},{b + arm:g}V{b:g}H{a + arm:g}M{c - arm:g},{b:g}H{c:g}V{b + arm:g}"
+        f"M{a:g},{d - arm:g}V{d:g}H{a + arm:g}M{c - arm:g},{d:g}H{c:g}V{d - arm:g}"
+    )
+    return f'<path d="{path}" fill="none" stroke="{color}" stroke-width="{weight:g}" stroke-linecap="square"/>'
+
+
+# The viewfinder: red corners around the name, 1.1 cap heights away from it (the
+# watermark), or around the monogram (the favicon).
+VF_PAD = 110
+VF_WEIGHT = 17
+
+
+def viewfinder_watermark():
+    """White name with a soft shadow, in red viewfinder corners: the photos' watermark."""
+    s1, p1, end = word("MIGUEL")
+    s2, p2, total = word("ROJAS", end + SPACE)
+    w, h = total + VF_PAD * 2, H + VF_PAD * 2
+    shadow = (
+        '<defs><filter id="shadow" x="-5%" y="-30%" width="110%" height="160%">'
+        '<feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.45"/>'
+        "</filter></defs>"
+    )
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w:g} {h:g}" width="{w:g}" height="{h:g}" '
+        'role="img" aria-labelledby="title"><title id="title">Miguel Rojas</title>'
+        f"{shadow}{corners(0, 0, w, h, VF_PAD, VF_WEIGHT, RED)}"
+        f'<g transform="translate({VF_PAD} {VF_PAD})" filter="url(#shadow)">{group(s1, p1, WHITE)}{group(s2, p2, WHITE)}</g>'
+        "</svg>\n"
+    )
+
+
+def viewfinder_icon(side=300):
+    """The favicon / site icon: black MR in red viewfinder corners on paper."""
+    widths = {"M": 120, "R": 84}
+    strokes, polys, w = word("MR", gap=20, widths=widths)
+    scale = side * 0.625 / w
+    x, y = (side - w * scale) / 2, (side - H * scale) / 2
+    inset, arm, weight = side * 0.094, side * 0.28, side * 0.078
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {side} {side}" width="{side}" height="{side}" '
+        'role="img" aria-labelledby="title"><title id="title">Miguel Rojas</title>'
+        f'<rect width="{side}" height="{side}" rx="{side * 0.1875:g}" fill="#F6F5F2"/>'
+        f"{corners(inset, inset, side - inset, side - inset, arm, weight, RED)}"
+        f'<g transform="translate({x:g} {y:g}) scale({scale:g})">{group(strokes, polys, INK)}</g></svg>\n'
+    )
+
+
 def write(path, content):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
@@ -215,9 +266,11 @@ def main():
     write(os.path.join(svg, "monogram-color.svg"), monogram(RED, WHITE))
     write(os.path.join(svg, "monogram-black.svg"), monogram(None, INK))
     write(os.path.join(svg, "monogram-white.svg"), monogram(None, WHITE))
+    write(os.path.join(svg, "watermark-viewfinder.svg"), viewfinder_watermark())
+    write(os.path.join(svg, "icon-viewfinder.svg"), viewfinder_icon())
 
     write(os.path.join(THEME_ASSETS, "logo.svg"), wordmark(None, None, inline=True))
-    write(os.path.join(THEME_ASSETS, "favicon.svg"), monogram(RED, WHITE))
+    write(os.path.join(THEME_ASSETS, "favicon.svg"), viewfinder_icon())
 
 
 main()
