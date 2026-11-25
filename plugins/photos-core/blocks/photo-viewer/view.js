@@ -434,12 +434,6 @@ const { state, actions, callbacks } = store( 'photos', {
 			}
 			actions.close();
 		} ),
-		// Clicking the dark area around the photo closes the viewer.
-		onStageClick: withSyncEvent( ( event ) => {
-			if ( event.target === event.currentTarget ) {
-				actions.close();
-			}
-		} ),
 		// Back/forward between viewer entries, or a jump to a #photo-<id> link on this page.
 		onPopstate( event ) {
 			const fromViewer = event.state?.photosViewer;

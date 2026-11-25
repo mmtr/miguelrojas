@@ -87,7 +87,6 @@ $photos_icon = static function ( $path ) {
 
 	<div
 		class="photos-viewer__screen"
-		data-wp-on--click="actions.onStageClick"
 		data-wp-on--touchstart="actions.onTouchStart"
 		data-wp-on--touchend="actions.onTouchEnd"
 	>
@@ -101,7 +100,7 @@ $photos_icon = static function ( $path ) {
 				</ul>
 			</header>
 
-			<div class="photos-viewer__photo" data-wp-on--click="actions.onStageClick">
+			<div class="photos-viewer__photo">
 				<button type="button" class="photos-viewer__prev" data-wp-on--click="actions.prev" data-wp-bind--hidden="!state.hasPrev" aria-label="<?php esc_attr_e( 'Previous photo', 'photos-core' ); ?>">
 					<?php echo $photos_icon( 'M15 5l-7 7 7 7' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 				</button>

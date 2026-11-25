@@ -105,7 +105,9 @@ body:has(.photos-photo-page) {
 	line-height: 1.3;
 }
 
+/* Place and date: on the right of the title line. */
 .photos-viewer__meta.photos-exif {
+	margin-left: auto;
 	font-size: 0.875rem;
 	color: rgb(235 233 228 / 0.6);
 }
@@ -638,6 +640,10 @@ body:has(.photos-photo-page) {
 		font-size: 1.375rem;
 	}
 
+	.photos-viewer.is-portrait .photos-viewer__meta.photos-exif {
+		margin-left: 0;
+	}
+
 	.photos-viewer.is-portrait .photos-viewer__bar {
 		grid-column: 2;
 		grid-row: 2;
@@ -694,6 +700,7 @@ body:has(.photos-photo-page) {
 
 	.photos-viewer__head .photos-exif {
 		justify-content: center;
+		margin-left: 0;
 	}
 
 	.photos-viewer__image {
