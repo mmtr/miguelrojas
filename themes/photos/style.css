@@ -83,6 +83,16 @@ Text Domain: photos
 }
 
 /*
+ * Photo grids (home and album pages): rounded tiles with room between them. The home
+ * grid's gap is set on its block in templates/index.html (blocks take no CSS variables
+ * there); keep the two the same.
+ */
+:root {
+	--photos-tile-gap: 0.875rem;
+	--photos-tile-radius: 6px;
+}
+
+/*
  * Square thumbnails trimmed at the bottom: the watermark sits in the bottom-right
  * corner, within the bottom 5% of a landscape photo, so each thumbnail is drawn 6%
  * taller than its square and the overflow is clipped. Portrait photos are cropped from
@@ -96,6 +106,15 @@ Text Domain: photos
 	margin: 0;
 	aspect-ratio: 1;
 	overflow: hidden;
+}
+
+/* Rounded corners, also for an album's label over its cover. (isolation keeps Safari
+   clipping the corners while the photo zooms on hover.) */
+.photos-grid .wp-block-post-template > li,
+.photos-grid .wp-block-post-featured-image {
+	border-radius: var(--photos-tile-radius);
+	overflow: hidden;
+	isolation: isolate;
 }
 
 .photos-grid .wp-block-post-featured-image a {
@@ -139,8 +158,8 @@ Text Domain: photos
 
 .photos-album .wp-block-gallery.has-nested-images {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
-	gap: var(--wp--preset--spacing--10);
+	grid-template-columns: repeat(auto-fill, minmax(17.5rem, 1fr));
+	gap: var(--photos-tile-gap);
 }
 
 .photos-album .wp-block-gallery.has-nested-images figure.wp-block-image {
@@ -148,6 +167,8 @@ Text Domain: photos
 	margin: 0 !important;
 	aspect-ratio: 1;
 	overflow: hidden;
+	border-radius: var(--photos-tile-radius);
+	isolation: isolate;
 }
 
 .photos-album .wp-block-gallery.has-nested-images figure.wp-block-image > a,
