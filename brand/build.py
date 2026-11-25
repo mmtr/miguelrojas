@@ -219,9 +219,16 @@ def viewfinder_watermark():
     s1, p1, end = word("MIGUEL")
     s2, p2, total = word("ROJAS", end + SPACE)
     w, h = total + VF_PAD * 2, H + VF_PAD * 2
+    # A soft shadow below the letters plus a thin dark halo around them, so the white name
+    # stays readable on bright photos (sizes are in the name's units: letters are 20 thick).
     shadow = (
-        '<defs><filter id="shadow" x="-5%" y="-30%" width="110%" height="160%">'
-        '<feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.45"/>'
+        '<defs><filter id="shadow" x="-5%" y="-60%" width="110%" height="220%">'
+        '<feGaussianBlur in="SourceAlpha" stdDeviation="9" result="soft"/>'
+        '<feOffset in="soft" dy="4" result="softdown"/>'
+        '<feFlood flood-color="#000" flood-opacity="0.55"/><feComposite in2="softdown" operator="in" result="shadow"/>'
+        '<feGaussianBlur in="SourceAlpha" stdDeviation="2.5" result="tight"/>'
+        '<feFlood flood-color="#000" flood-opacity="0.5"/><feComposite in2="tight" operator="in" result="halo"/>'
+        '<feMerge><feMergeNode in="shadow"/><feMergeNode in="halo"/><feMergeNode in="SourceGraphic"/></feMerge>'
         "</filter></defs>"
     )
     return (
