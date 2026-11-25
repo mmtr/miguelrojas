@@ -62,7 +62,7 @@ html:has(dialog.photos-viewer[open]) {
 .photos-photo-page {
 	--photos-viewer-height: calc(100dvh - var(--wp-admin--admin-bar--height, 0px));
 	--photos-sticky-top: var(--wp-admin--admin-bar--height, 0px);
-	--photos-pad-top: 3.5rem;
+	--photos-pad-top: 6.75rem;
 
 	position: relative;
 	margin: 0 !important;
@@ -204,8 +204,11 @@ body:has(.photos-photo-page) {
 	padding-top: 0.75rem;
 }
 
+/* The settings keep one line while they fit beside Like; otherwise Like moves down
+   first, and only then do the settings wrap. */
 .photos-viewer__bar > .photos-exif {
-	flex: 1 1 22rem;
+	flex: 1 1 auto;
+	min-width: 0;
 }
 
 .photos-exif {
@@ -342,8 +345,10 @@ body:has(.photos-photo-page) {
 	opacity: 0.6;
 }
 
-/* The comments block's own title repeats the count shown above. */
-.photos-viewer__comments .wp-block-comments-title {
+/* The comments block's own title repeats the count shown above; with no comments yet,
+   the form's "Leave a Reply" repeats the "Leave a comment" heading. */
+.photos-viewer__comments .wp-block-comments-title,
+.photos-viewer__comments:not(:has(.wp-block-comment-template)) .comment-reply-title {
 	display: none;
 }
 
@@ -503,7 +508,34 @@ body:has(.photos-photo-page) {
 	opacity: 0.75;
 }
 
-/* Photo page: the logo, top left, links to the home page. */
+/* Photo page: the site's logo with its slogan and viewfinder corners, as at the top of
+   the home page (theme), centered at the top and light on the dark background. */
+.photos-viewer__brand {
+	position: absolute;
+	top: 1.25rem;
+	right: 0;
+	left: 0;
+	z-index: 2;
+	display: flex;
+	justify-content: center;
+	pointer-events: none;
+}
+
+.photos-viewer__brand > * {
+	pointer-events: auto;
+}
+
+.photos-viewer__brand .photos-logo,
+.photos-viewer__brand .photos-logo:hover,
+.photos-viewer__brand .photos-logo:focus-visible {
+	color: #ebe9e4;
+}
+
+.photos-viewer__brand .photos-tagline {
+	color: rgb(235 233 228 / 0.6);
+}
+
+/* Photo page without the theme's logo block: the wordmark, top left, links home. */
 .photos-viewer__home {
 	position: absolute;
 	top: 1.5rem;
@@ -648,11 +680,23 @@ body:has(.photos-photo-page) {
 		left: 1.25rem;
 	}
 
+	.photos-viewer__brand {
+		top: 1rem;
+	}
+
+	.photos-photo-page .photos-viewer__screen {
+		padding-top: 5.75rem;
+	}
+
 	.photos-viewer__bar {
 		flex-direction: column;
 		align-items: flex-start;
 		padding: 0.9rem 0.5rem 1.25rem;
 		contain: none;
+	}
+
+	.photos-viewer__bar > .photos-exif {
+		flex: none;
 	}
 
 	.photos-viewer__like {

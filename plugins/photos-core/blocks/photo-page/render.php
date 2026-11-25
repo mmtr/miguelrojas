@@ -5,7 +5,7 @@
  * settings and Like button just below; the description and comments follow, their top
  * peeking in at the bottom of the screen. It's what a photo's own URL shows (a shared
  * link, a reload, a search result), so instead of the viewer's arrows and close button
- * it has the site logo, top left, linking home.
+ * it has the site's logo at the top, as on the home page, linking home.
  *
  * @package photos-core
  *
@@ -26,9 +26,21 @@ $photos_social   = photos_has_social( $photos_post );
 $photos_src      = $photos_image_id ? wp_get_attachment_image_src( $photos_image_id, 'full' ) : false;
 $photos_portrait = $photos_src && $photos_src[2] > $photos_src[1]; // Leaves more room for the settings (style.css).
 
-// The theme's wordmark if it has one (shown light on this dark page), else the site name.
+// The theme's logo block (name, slogan, viewfinder corners), as at the top of the home
+// page, shown light on this dark page; else the theme's wordmark, else the site name.
+$photos_brand = WP_Block_Type_Registry::get_instance()->is_registered( 'photos/logo' )
+	? render_block(
+		array(
+			'blockName'    => 'photos/logo',
+			'attrs'        => array(),
+			'innerBlocks'  => array(),
+			'innerHTML'    => '',
+			'innerContent' => array(),
+		)
+	)
+	: '';
 $photos_logo_file = get_theme_file_path( 'assets/logo.svg' );
-$photos_logo      = is_readable( $photos_logo_file ) ? file_get_contents( $photos_logo_file ) : ''; // phpcs:ignore WordPress.WP.AlternativeFunctions
+$photos_logo      = ! $photos_brand && is_readable( $photos_logo_file ) ? file_get_contents( $photos_logo_file ) : ''; // phpcs:ignore WordPress.WP.AlternativeFunctions
 
 $photos_details_list = static function ( $items, $class ) {
 	if ( ! $items ) {
@@ -47,9 +59,13 @@ $photos_details_list = static function ( $items, $class ) {
 };
 ?>
 <div <?php echo get_block_wrapper_attributes( array( 'class' => 'photos-viewer photos-photo-page' . ( $photos_portrait ? ' is-portrait' : '' ) ) ); ?>>
-	<a class="photos-viewer__home" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
-		<?php echo $photos_logo ? $photos_logo : esc_html( get_bloginfo( 'name' ) ); // phpcs:ignore WordPress.Security.EscapeOutput -- theme file, not user input. ?>
-	</a>
+	<?php if ( $photos_brand ) : ?>
+		<header class="photos-viewer__brand"><?php echo $photos_brand; // phpcs:ignore WordPress.Security.EscapeOutput -- rendered block. ?></header>
+	<?php else : ?>
+		<a class="photos-viewer__home" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
+			<?php echo $photos_logo ? $photos_logo : esc_html( get_bloginfo( 'name' ) ); // phpcs:ignore WordPress.Security.EscapeOutput -- theme file, not user input. ?>
+		</a>
+	<?php endif; ?>
 
 	<div class="photos-viewer__screen">
 		<div class="photos-viewer__figure">

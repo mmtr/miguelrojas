@@ -43,11 +43,13 @@ Text Domain: photos
 	height: var(--photos-logo-height);
 }
 
-.photos-header .photos-brand {
+.photos-header .photos-brand,
+.photos-viewer__brand .photos-brand {
 	padding: 18px 24px;
 }
 
-.photos-header .photos-brand::before {
+.photos-header .photos-brand::before,
+.photos-viewer__brand .photos-brand::before {
 	--c: var(--wp--preset--color--accent);
 
 	content: "";
@@ -89,7 +91,8 @@ Text Domain: photos
 		--photos-vf-arm: 16px;
 	}
 
-	.photos-header .photos-brand {
+	.photos-header .photos-brand,
+	.photos-viewer__brand .photos-brand {
 		padding: 14px 18px;
 	}
 }
