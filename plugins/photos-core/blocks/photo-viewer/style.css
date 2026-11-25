@@ -92,7 +92,7 @@ body:has(.photos-photo-page) {
 .photos-viewer__head {
 	display: flex;
 	flex-wrap: wrap;
-	align-items: baseline;
+	align-items: center; /* Not baseline: the place/date icons would set their items' baseline. */
 	gap: 0.2rem 1.25rem;
 	padding-bottom: 0.7rem;
 }
