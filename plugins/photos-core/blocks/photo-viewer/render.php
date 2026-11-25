@@ -114,5 +114,6 @@ $photos_icon = static function ( $path ) {
 				</div>
 			</template>
 		</dl>
+		<a class="photos-viewer__comments-link" data-wp-on--click="actions.openComments" data-wp-bind--href="state.current.commentsUrl" data-wp-bind--hidden="!state.current.commentsUrl" data-wp-text="state.current.commentsLabel"></a>
 	</aside>
 </dialog>

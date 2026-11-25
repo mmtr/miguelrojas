@@ -8,7 +8,7 @@
  */
 import { store, getElement, withSyncEvent } from '@wordpress/interactivity';
 
-const EMPTY = { title: '', description: '', url: null, imageId: null, index: null, items: [], src: null, srcset: null, width: null, height: null, alt: '' };
+const EMPTY = { title: '', description: '', url: null, imageId: null, index: null, items: [], src: null, srcset: null, width: null, height: null, alt: '', commentsUrl: null, commentsLabel: '' };
 const PHOTO_HASH = /^#photo-(\d+)$/;
 const SWIPE_DISTANCE = 50;
 const LOAD_AHEAD = 1000; // Start loading the next page this many pixels before the end.
@@ -275,6 +275,23 @@ const { state, actions, callbacks } = store( 'photos', {
 			event.preventDefault();
 			opener = event.target.closest( 'a[href]' );
 			actions.show( index, 'push' );
+		} ),
+		// The viewer already shows the photo's URL, so a link to its #comments would only
+		// change the hash. Put the grid's URL back first so the photo page (with the likes
+		// and comments) really loads, in place of the viewer's history entry: Back then
+		// returns to the grid.
+		openComments: withSyncEvent( ( event ) => {
+			if ( event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey ) {
+				return;
+			}
+			event.preventDefault();
+			const url = state.current.commentsUrl;
+			window.history.replaceState( historyState(), '', pageUrl );
+			if ( pushedEntry ) {
+				window.location.replace( url );
+			} else {
+				window.location.assign( url );
+			}
 		} ),
 		onKeydown: withSyncEvent( ( event ) => {
 			if ( ! state.isOpen ) {

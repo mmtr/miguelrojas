@@ -40,6 +40,38 @@ $photos_preload_attrs = static function ( $post ) {
 };
 
 wp_interactivity_state( 'photos/page', array( 'loading' => false ) );
+
+// Likes (Jetpack's Like block) and comments (core blocks; Jetpack swaps in its comment form),
+// rendered for this photo post.
+$photos_social = static function () use ( $photos_post ) {
+	$markup = '<!-- wp:jetpack/like /-->
+<!-- wp:comments {"className":"photos-comments"} -->
+<div class="wp-block-comments photos-comments"><!-- wp:comments-title {"showPostTitle":false,"level":2} /-->
+<!-- wp:comment-template -->
+<!-- wp:comment-author-name /-->
+<!-- wp:comment-date /-->
+<!-- wp:comment-content /-->
+<!-- wp:comment-reply-link /-->
+<!-- /wp:comment-template -->
+<!-- wp:comments-pagination -->
+<!-- wp:comments-pagination-previous /-->
+<!-- wp:comments-pagination-next /-->
+<!-- /wp:comments-pagination -->
+<!-- wp:post-comments-form /--></div>
+<!-- /wp:comments -->';
+
+	$context = array(
+		'postId'   => $photos_post->ID,
+		'postType' => $photos_post->post_type,
+	);
+	$html    = '';
+	foreach ( parse_blocks( $markup ) as $parsed ) {
+		if ( ! empty( $parsed['blockName'] ) && WP_Block_Type_Registry::get_instance()->is_registered( $parsed['blockName'] ) ) {
+			$html .= ( new WP_Block( $parsed, $context ) )->render();
+		}
+	}
+	return $html;
+};
 ?>
 <div
 	<?php echo get_block_wrapper_attributes( array( 'class' => 'photos-viewer photos-photo-page' ) ); ?>
@@ -107,6 +139,11 @@ wp_interactivity_state( 'photos/page', array( 'loading' => false ) );
 					</div>
 				<?php endforeach; ?>
 			</dl>
+		<?php endif; ?>
+		<?php if ( 'post' === $photos_post->post_type && ( comments_open( $photos_post ) || get_comments_number( $photos_post ) ) ) : ?>
+			<section class="photos-viewer__social" id="comments">
+				<?php echo $photos_social(); // phpcs:ignore WordPress.Security.EscapeOutput -- rendered blocks. ?>
+			</section>
 		<?php endif; ?>
 	</aside>
 </div>

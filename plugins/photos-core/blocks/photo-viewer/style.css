@@ -186,6 +186,107 @@ dialog.photos-viewer[open],
 	display: none !important;
 }
 
+/* Likes and comments: a link in the viewer, the full section on the photo page. */
+.photos-viewer__comments-link {
+	display: inline-block;
+	margin-top: 2rem;
+	color: inherit;
+	font-size: 0.875rem;
+	text-underline-offset: 0.2em;
+}
+
+.photos-viewer__comments-link:hover {
+	color: inherit;
+	opacity: 0.75;
+}
+
+.photos-viewer__social {
+	margin-top: 2rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid rgb(255 255 255 / 0.08);
+	scroll-margin-top: 1rem;
+}
+
+.photos-viewer__social a {
+	color: inherit;
+}
+
+.photos-comments .wp-block-comments-title,
+.photos-comments .comment-reply-title {
+	margin: 1.5rem 0 1rem;
+	color: inherit;
+	font-size: 1rem;
+	font-weight: 500;
+}
+
+.photos-comments .wp-block-comment-template {
+	margin: 0 0 1.5rem;
+	padding: 0;
+	list-style: none;
+}
+
+.photos-comments .wp-block-comment-template li {
+	margin-bottom: 1.25rem;
+}
+
+.photos-comments .wp-block-comment-template ol {
+	margin: 1rem 0 0;
+	padding-left: 1rem;
+	list-style: none;
+}
+
+.photos-comments .wp-block-comment-author-name {
+	font-weight: 500;
+}
+
+.photos-comments .wp-block-comment-date {
+	font-size: 0.75rem;
+	opacity: 0.6;
+}
+
+.photos-comments .wp-block-comment-content p {
+	margin: 0.35rem 0;
+}
+
+.photos-comments .wp-block-comment-reply-link {
+	font-size: 0.8125rem;
+	opacity: 0.75;
+}
+
+/* WordPress's own comment form (Jetpack's replaces it with an embedded form). */
+.photos-comments input[type="text"],
+.photos-comments input[type="email"],
+.photos-comments input[type="url"],
+.photos-comments textarea {
+	box-sizing: border-box;
+	width: 100%;
+	padding: 0.6rem 0.75rem;
+	border: 1px solid rgb(255 255 255 / 0.15);
+	border-radius: 4px;
+	background: rgb(255 255 255 / 0.06);
+	color: inherit;
+	font: inherit;
+}
+
+.photos-comments input[type="submit"],
+.photos-comments .wp-element-button {
+	padding: 0.6rem 1.25rem;
+	border: 0;
+	border-radius: 4px;
+	background: #ebe9e4;
+	color: #121211;
+	font: inherit;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.photos-comments label {
+	display: block;
+	margin-bottom: 0.25rem;
+	font-size: 0.8125rem;
+	opacity: 0.75;
+}
+
 /* Close and arrows: buttons in the viewer, links on the page. */
 .photos-viewer__close,
 .photos-viewer__prev,
