@@ -5,15 +5,13 @@
 	"title": "Photo Page",
 	"category": "media",
 	"icon": "format-image",
-	"description": "Shows a photo post like the photo viewer: the photo on a dark background, its details beside it, arrows to the newer and older photo.",
+	"description": "Shows a photo post like the photo viewer: the photo on a dark background, its details beside it, and the site logo linking home.",
 	"textdomain": "photos-core",
 	"usesContext": [ "postId" ],
 	"supports": {
-		"html": false,
-		"interactivity": true
+		"html": false
 	},
 	"editorScript": "file:./edit.js",
-	"viewScriptModule": "file:./view.js",
 	"style": [ "photos-viewer" ],
 	"render": "file:./render.php"
 }

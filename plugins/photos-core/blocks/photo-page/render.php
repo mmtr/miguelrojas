@@ -1,9 +1,9 @@
 <?php
 /**
  * Photo Page block: a photo post laid out like the viewer (dark background, photo on the
- * left, details on the right), so reloading or opening a shared link looks the same as
- * clicking the photo in the grid. Arrows link to the newer and older photo, in grid order;
- * × goes back to the grid page the photo is on. Keyboard and swipe work as in the viewer.
+ * left, details on the right). It's what a photo's own URL shows (a shared link, a reload,
+ * a search result), so instead of the viewer's arrows and close button it has the site
+ * logo, top left, linking to the home page.
  *
  * @package photos-core
  *
@@ -20,49 +20,16 @@ $photos_position = photos_get_grid_position( $photos_post );
 $photos_desc     = photos_get_description( $photos_post );
 $photos_items    = photos_get_details_items( $photos_post->ID );
 
-// Grid order is newest first: the left arrow goes to the newer photo, the right to the older.
-$photos_newer = 'post' === $photos_post->post_type ? get_adjacent_post( false, '', false ) : null;
-$photos_older = 'post' === $photos_post->post_type ? get_adjacent_post( false, '', true ) : null;
-
-$photos_icon = static function ( $path ) {
-	return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="' . esc_attr( $path ) . '"/></svg>';
-};
-
-// The neighbour's image, so the script can load it before moving there (and ahead of time).
-$photos_preload_attrs = static function ( $post ) {
-	$image_id = $post ? (int) get_post_thumbnail_id( $post ) : 0;
-	$src      = $image_id ? wp_get_attachment_image_src( $image_id, 'full' ) : false;
-	if ( ! $src ) {
-		return '';
-	}
-	$srcset = wp_get_attachment_image_srcset( $image_id, 'full' );
-	return sprintf( ' data-photos-src="%s" data-photos-srcset="%s"', esc_url( $src[0] ), esc_attr( $srcset ? $srcset : '' ) );
-};
-
-wp_interactivity_state( 'photos/page', array( 'loading' => false ) );
-
+// The theme's wordmark if it has one (shown light on this dark page), else the site name.
+$photos_logo_file = get_theme_file_path( 'assets/logo.svg' );
+$photos_logo      = is_readable( $photos_logo_file ) ? file_get_contents( $photos_logo_file ) : ''; // phpcs:ignore WordPress.WP.AlternativeFunctions
 ?>
-<div
-	<?php echo get_block_wrapper_attributes( array( 'class' => 'photos-viewer photos-photo-page' ) ); ?>
-	data-wp-interactive="photos/page"
-	data-wp-class--is-loading="state.loading"
-	data-wp-init="callbacks.preloadNeighbours"
-	data-wp-on-window--pageshow="actions.onPageshow"
-	data-wp-on-document--keydown="actions.onKeydown"
-	data-wp-on--touchstart="actions.onTouchStart"
-	data-wp-on--touchend="actions.onTouchEnd"
->
-	<a class="photos-viewer__close" href="<?php echo esc_url( $photos_position['url'] ); ?>" data-photos-nav="close" aria-label="<?php esc_attr_e( 'Close', 'photos-core' ); ?>">
-		<?php echo $photos_icon( 'M6 6l12 12M18 6L6 18' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+<div <?php echo get_block_wrapper_attributes( array( 'class' => 'photos-viewer photos-photo-page' ) ); ?>>
+	<a class="photos-viewer__home" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
+		<?php echo $photos_logo ? $photos_logo : esc_html( get_bloginfo( 'name' ) ); // phpcs:ignore WordPress.Security.EscapeOutput -- theme file, not user input. ?>
 	</a>
 
 	<div class="photos-viewer__stage">
-		<?php if ( $photos_newer ) : ?>
-			<a class="photos-viewer__prev" href="<?php echo esc_url( get_permalink( $photos_newer ) ); ?>" rel="prev" data-photos-nav="prev"<?php echo $photos_preload_attrs( $photos_newer ); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped above. ?> data-wp-on--click="actions.onLinkClick" aria-label="<?php esc_attr_e( 'Previous photo', 'photos-core' ); ?>">
-				<?php echo $photos_icon( 'M15 5l-7 7 7 7' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
-			</a>
-		<?php endif; ?>
-
 		<?php
 		if ( $photos_image_id ) {
 			echo wp_get_attachment_image(
@@ -79,16 +46,6 @@ wp_interactivity_state( 'photos/page', array( 'loading' => false ) );
 			);
 		}
 		?>
-
-		<span class="photos-viewer__spinner" role="status" data-wp-bind--hidden="!state.loading" hidden>
-			<span class="photos-viewer__visually-hidden"><?php esc_html_e( 'Loading photo', 'photos-core' ); ?></span>
-		</span>
-
-		<?php if ( $photos_older ) : ?>
-			<a class="photos-viewer__next" href="<?php echo esc_url( get_permalink( $photos_older ) ); ?>" rel="next" data-photos-nav="next"<?php echo $photos_preload_attrs( $photos_older ); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped above. ?> data-wp-on--click="actions.onLinkClick" aria-label="<?php esc_attr_e( 'Next photo', 'photos-core' ); ?>">
-				<?php echo $photos_icon( 'M9 5l7 7-7 7' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
-			</a>
-		<?php endif; ?>
 	</div>
 
 	<aside class="photos-viewer__panel">
