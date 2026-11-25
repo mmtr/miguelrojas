@@ -525,9 +525,7 @@ body:has(.photos-photo-page) {
 	pointer-events: auto;
 }
 
-.photos-viewer__brand .photos-logo,
-.photos-viewer__brand .photos-logo:hover,
-.photos-viewer__brand .photos-logo:focus-visible {
+.photos-viewer__brand .photos-logo {
 	color: #ebe9e4;
 }
 

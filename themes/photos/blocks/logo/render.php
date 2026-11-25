@@ -23,12 +23,13 @@ $photos_tagline_after  = 0.9;  // after the last one's ("T"); other letters diff
 $photos_tagline        = trim( html_entity_decode( (string) get_option( 'blogdescription' ), ENT_QUOTES, 'UTF-8' ) );
 $photos_tagline_height = $photos_tagline_cap + 1; // Room for round letters' overshoot.
 ?>
-<div <?php echo get_block_wrapper_attributes( array( 'class' => 'photos-brand' ) ); ?>>
-	<a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" class="photos-logo" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>"><?php echo $photos_logo; // phpcs:ignore WordPress.Security.EscapeOutput -- theme file, not user input. ?></a>
+<?php // The whole lockup (name, tagline, viewfinder corners) is one link home. ?>
+<a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" <?php echo get_block_wrapper_attributes( array( 'class' => 'photos-brand' ) ); ?>>
+	<span class="photos-logo"><?php echo $photos_logo; // phpcs:ignore WordPress.Security.EscapeOutput -- theme file, not user input. ?><span class="screen-reader-text"><?php echo esc_html( get_bloginfo( 'name' ) ); ?></span></span>
 	<?php if ( '' !== $photos_tagline ) : ?>
-		<p class="photos-tagline" style="--photos-tagline-ratio: <?php echo esc_attr( $photos_tagline_height / 100 ); ?>">
+		<span class="photos-tagline" style="--photos-tagline-ratio: <?php echo esc_attr( $photos_tagline_height / 100 ); ?>">
 			<svg class="photos-tagline__svg" viewBox="0 0 1528 <?php echo (int) $photos_tagline_height; ?>" aria-hidden="true" focusable="false"><text x="<?php echo esc_attr( -$photos_tagline_inset ); ?>" y="<?php echo (int) $photos_tagline_cap; ?>" font-size="<?php echo (int) $photos_tagline_size; ?>" textLength="<?php echo esc_attr( 1528 + $photos_tagline_inset + $photos_tagline_after ); ?>" lengthAdjust="spacing"><?php echo esc_html( mb_strtoupper( $photos_tagline, 'UTF-8' ) ); ?></text></svg>
 			<span class="screen-reader-text"><?php echo esc_html( $photos_tagline ); ?></span>
-		</p>
+		</span>
 	<?php endif; ?>
-</div>
+</a>
