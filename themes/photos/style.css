@@ -121,38 +121,6 @@ Text Domain: photos
 }
 
 /*
- * The logo's red as an accent: a soft red glow fades in around the inside edges of the
- * photo under the pointer (or reached with the keyboard).
- */
-.photos-grid .wp-block-post-featured-image,
-.photos-album .wp-block-gallery figure.wp-block-image {
-	position: relative;
-}
-
-.photos-grid .wp-block-post-featured-image::after,
-.photos-album .wp-block-gallery figure.wp-block-image::after {
-	content: "";
-	position: absolute;
-	inset: 0;
-	z-index: 1;
-	box-shadow: inset 0 0 2.5rem rgb(215 25 31 / 0);
-	transition: box-shadow 0.3s ease-out;
-	pointer-events: none;
-}
-
-@media (hover: hover) {
-	.photos-grid .wp-block-post-featured-image:hover::after,
-	.photos-album .wp-block-gallery figure.wp-block-image:hover::after {
-		box-shadow: inset 0 0 2.5rem rgb(215 25 31 / 0.5);
-	}
-}
-
-.photos-grid .wp-block-post-featured-image:has(a:focus-visible)::after,
-.photos-album .wp-block-gallery figure.wp-block-image:has(a:focus-visible)::after {
-	box-shadow: inset 0 0 2.5rem rgb(215 25 31 / 0.5);
-}
-
-/*
  * Infinite scroll (turned on by the photo viewer's script): the page links stay in the
  * page, invisible, as the point that triggers loading more; without JavaScript they show.
  */
@@ -369,11 +337,6 @@ Text Domain: photos
 	.photos-grid .is-revealed img,
 	.photos-album .wp-block-gallery .is-revealed img {
 		animation-name: photos-tile-fade;
-	}
-
-	.photos-grid .wp-block-post-featured-image::after,
-	.photos-album .wp-block-gallery figure.wp-block-image::after {
-		transition: none;
 	}
 }
 
