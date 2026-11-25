@@ -182,31 +182,26 @@ Text Domain: photos
 }
 
 /*
- * Footer: a line and the subscribe form (Jetpack; signed-in WordPress.com users get a
- * one-click button), social links, and the WordPress credit, centered like the header.
+ * Footer: the subscribe form (Jetpack; signed-in WordPress.com users get a one-click
+ * button), social links, and the WordPress.com credit: one row on wide screens, stacked
+ * and centered on narrow ones.
  */
 .photos-footer__inner {
-	gap: 1.25rem;
-	text-align: center;
+	gap: 1.5rem 2rem;
 }
 
 .photos-footer p {
 	margin: 0;
 }
 
-.photos-footer__lead {
-	font-size: var(--wp--preset--font-size--medium);
-	font-weight: 500;
-}
-
 .photos-footer .photos-subscribe {
-	width: min(100%, 26rem);
+	width: min(100%, 24rem);
 	margin: 0;
 }
 
 .photos-social {
 	gap: 0.75rem !important;
-	margin: 0.5rem 0 0;
+	margin: 0;
 	color: var(--wp--preset--color--contrast);
 }
 
@@ -220,17 +215,45 @@ Text Domain: photos
 }
 
 .photos-footer__credit {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
 	color: var(--wp--preset--color--muted);
 	font-size: var(--wp--preset--font-size--small);
 }
 
-.photos-footer__credit a {
-	color: inherit;
-	text-underline-offset: 0.2em;
+/* The official logo (assets/wpcom-logo.svg, from the WordPress.com Brand Kit), unaltered. */
+.photos-footer__wpcom {
+	display: block;
+	width: calc(1rem * 950 / 129);
+	height: 1rem;
+	background: url(assets/wpcom-logo.svg) center / contain no-repeat;
 }
 
-.photos-footer__credit a:hover {
-	color: var(--wp--preset--color--contrast);
+.photos-footer__wpcom:hover,
+.photos-footer__wpcom:focus-visible {
+	opacity: 0.7;
+}
+
+/* Wide screens: form on the left, links in the exact middle, credit on the right. */
+@media (min-width: 782px) {
+	/* (Two classes: WordPress sets "body .is-layout-flex { display: flex }".) */
+	.photos-footer .photos-footer__inner {
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		align-items: center;
+	}
+
+	.photos-footer__credit {
+		justify-self: end;
+	}
+}
+
+@media (max-width: 781px) {
+	.photos-footer__inner {
+		flex-direction: column;
+		text-align: center;
+	}
 }
 
 /* Single photo: fit the whole image on screen, whatever its orientation. */
