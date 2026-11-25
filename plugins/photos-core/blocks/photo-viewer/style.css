@@ -51,6 +51,12 @@ html:has(dialog.photos-viewer[open]) {
 	overflow: hidden;
 }
 
+/* Portrait photos are narrow, so the settings and Like under them take two or three
+   lines: the photo leaves room for them, so the comments still peek in below. */
+.photos-viewer.is-portrait {
+	--photos-bar-h: 6.5rem;
+}
+
 /* The page: its first screen fits the window below the admin bar (logged-in users), and
    leaves room at the top for the logo. */
 .photos-photo-page {

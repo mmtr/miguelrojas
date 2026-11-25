@@ -301,6 +301,11 @@ const { state, actions, callbacks } = store( 'photos', {
 		get exif() {
 			return ( state.current.items || [] ).filter( ( item ) => item.key !== 'location' && item.key !== 'taken' );
 		},
+		// Portrait photos leave more room for the settings under them (see style.css).
+		get isPortrait() {
+			const { width, height } = state.current;
+			return Boolean( width ) && height > width;
+		},
 		get hasMore() {
 			return Boolean( state.current.description || state.current.social );
 		},

@@ -74,6 +74,7 @@ $photos_icon = static function ( $path ) {
 	data-wp-interactive="photos"
 	data-wp-init="callbacks.init"
 	data-wp-class--is-loading="state.loading"
+	data-wp-class--is-portrait="state.isPortrait"
 	data-wp-watch="callbacks.syncDialog"
 	data-wp-on--cancel="actions.onCancel"
 	data-wp-on-document--click="actions.openFromLink"
