@@ -241,17 +241,17 @@ def viewfinder_watermark():
 
 
 def viewfinder_icon(side=300):
-    """The favicon / site icon: black MR in red viewfinder corners on paper."""
+    """The favicon / site icon: black MR on paper, the red viewfinder corners on its edges."""
     widths = {"M": 120, "R": 84}
     strokes, polys, w = word("MR", gap=20, widths=widths)
-    scale = side * 0.625 / w
+    scale = side * 0.76 / w
     x, y = (side - w * scale) / 2, (side - H * scale) / 2
-    inset, arm, weight = side * 0.094, side * 0.28, side * 0.078
+    arm, weight = side * 0.28, side * 0.08
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {side} {side}" width="{side}" height="{side}" '
         'role="img" aria-labelledby="title"><title id="title">Miguel Rojas</title>'
-        f'<rect width="{side}" height="{side}" rx="{side * 0.1875:g}" fill="#F6F5F2"/>'
-        f"{corners(inset, inset, side - inset, side - inset, arm, weight, RED)}"
+        f'<rect width="{side}" height="{side}" fill="#F6F5F2"/>'
+        f"{corners(0, 0, side, side, arm, weight, RED)}"
         f'<g transform="translate({x:g} {y:g}) scale({scale:g})">{group(strokes, polys, INK)}</g></svg>\n'
     )
 
