@@ -203,9 +203,63 @@ Text Domain: photos
 	margin-inline: auto;
 }
 
+/*
+ * Loading (assets/tiles.js): a soft shimmer until a tile's image arrives, then the photo
+ * fades in, settling from a slight zoom. "backwards" only, so the hover zoom still works
+ * afterwards.
+ */
+.photos-grid .wp-block-post-featured-image.is-pending,
+.photos-album .wp-block-gallery figure.wp-block-image.is-pending {
+	background: linear-gradient(100deg, var(--wp--preset--color--line) 30%, #ecebe7 50%, var(--wp--preset--color--line) 70%) 0 0 / 300% 100%;
+	animation: photos-tile-shimmer 1.6s ease-in-out infinite;
+}
+
+.photos-grid .is-pending img,
+.photos-album .wp-block-gallery .is-pending img {
+	opacity: 0;
+}
+
+.photos-grid .is-revealed img,
+.photos-album .wp-block-gallery .is-revealed img {
+	animation: photos-tile-in 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
+
+@keyframes photos-tile-shimmer {
+	from {
+		background-position: 100% 0;
+	}
+
+	to {
+		background-position: 0 0;
+	}
+}
+
+@keyframes photos-tile-in {
+	from {
+		opacity: 0;
+		transform: scale(1.06);
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.photos-grid .wp-block-post-featured-image img,
 	.photos-album .wp-block-gallery.has-nested-images figure.wp-block-image img {
 		transition: none;
+	}
+
+	.photos-grid .wp-block-post-featured-image.is-pending,
+	.photos-album .wp-block-gallery figure.wp-block-image.is-pending {
+		animation: none;
+	}
+
+	.photos-grid .is-revealed img,
+	.photos-album .wp-block-gallery .is-revealed img {
+		animation-name: photos-tile-fade;
+	}
+}
+
+@keyframes photos-tile-fade {
+	from {
+		opacity: 0;
 	}
 }
