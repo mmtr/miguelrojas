@@ -121,6 +121,28 @@ Text Domain: photos
 }
 
 /*
+ * The logo's red as an accent: a frame around the photo under the pointer, or reached
+ * with the keyboard. (Drawn outside the tile, in the gap, so it doesn't cover the photo.)
+ */
+.photos-grid .wp-block-post-featured-image,
+.photos-album .wp-block-gallery figure.wp-block-image {
+	outline: 3px solid transparent;
+	transition: outline-color 0.2s ease;
+}
+
+@media (hover: hover) {
+	.photos-grid .wp-block-post-featured-image:hover,
+	.photos-album .wp-block-gallery figure.wp-block-image:hover {
+		outline-color: var(--wp--preset--color--accent);
+	}
+}
+
+.photos-grid .wp-block-post-featured-image:has(a:focus-visible),
+.photos-album .wp-block-gallery figure.wp-block-image:has(a:focus-visible) {
+	outline-color: var(--wp--preset--color--accent);
+}
+
+/*
  * Infinite scroll (turned on by the photo viewer's script): the page links stay in the
  * page, invisible, as the point that triggers loading more; without JavaScript they show.
  */
@@ -182,9 +204,9 @@ Text Domain: photos
 }
 
 /*
- * Footer: the subscribe form (Jetpack; signed-in WordPress.com users get a one-click
- * button), social links, and the WordPress.com credit: one row on wide screens, stacked
- * and centered on narrow ones.
+ * Footer: social links, the subscribe form (Jetpack; signed-in WordPress.com users get a
+ * one-click button), and the WordPress.com credit: one row on wide screens, stacked and
+ * centered on narrow ones.
  */
 .photos-footer__inner {
 	gap: 1.5rem 2rem;
@@ -235,13 +257,17 @@ Text Domain: photos
 	opacity: 0.7;
 }
 
-/* Wide screens: form on the left, links in the exact middle, credit on the right. */
+/* Wide screens: links on the left, form in the exact middle, credit on the right. */
 @media (min-width: 782px) {
 	/* (Two classes: WordPress sets "body .is-layout-flex { display: flex }".) */
 	.photos-footer .photos-footer__inner {
 		display: grid;
 		grid-template-columns: 1fr auto 1fr;
 		align-items: center;
+	}
+
+	.photos-social {
+		justify-self: start;
 	}
 
 	.photos-footer__credit {
