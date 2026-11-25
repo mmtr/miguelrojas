@@ -121,6 +121,55 @@ Text Domain: photos
 }
 
 /*
+ * Hover (or keyboard focus): red viewfinder corners, like a camera finding focus, fade in
+ * and close in a little while the photo zooms slightly (below). Mouse devices only for
+ * hover, so taps on phones don't flash them.
+ */
+.photos-grid .wp-block-post-featured-image,
+.photos-album .wp-block-gallery figure.wp-block-image {
+	position: relative;
+}
+
+.photos-grid .wp-block-post-featured-image::after,
+.photos-album .wp-block-gallery figure.wp-block-image::after {
+	--photos-vf-color: var(--wp--preset--color--accent);
+	--photos-vf-arm: 28px;
+	--photos-vf-line: 2px;
+
+	content: "";
+	position: absolute;
+	inset: 4px;
+	z-index: 1;
+	background:
+		linear-gradient(var(--photos-vf-color) 0 0) left top / var(--photos-vf-arm) var(--photos-vf-line),
+		linear-gradient(var(--photos-vf-color) 0 0) left top / var(--photos-vf-line) var(--photos-vf-arm),
+		linear-gradient(var(--photos-vf-color) 0 0) right top / var(--photos-vf-arm) var(--photos-vf-line),
+		linear-gradient(var(--photos-vf-color) 0 0) right top / var(--photos-vf-line) var(--photos-vf-arm),
+		linear-gradient(var(--photos-vf-color) 0 0) left bottom / var(--photos-vf-arm) var(--photos-vf-line),
+		linear-gradient(var(--photos-vf-color) 0 0) left bottom / var(--photos-vf-line) var(--photos-vf-arm),
+		linear-gradient(var(--photos-vf-color) 0 0) right bottom / var(--photos-vf-arm) var(--photos-vf-line),
+		linear-gradient(var(--photos-vf-color) 0 0) right bottom / var(--photos-vf-line) var(--photos-vf-arm);
+	background-repeat: no-repeat;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.35s ease, inset 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@media (hover: hover) {
+	.photos-grid .wp-block-post-featured-image:hover::after,
+	.photos-album .wp-block-gallery figure.wp-block-image:hover::after {
+		inset: 14px;
+		opacity: 1;
+	}
+}
+
+.photos-grid .wp-block-post-featured-image:has(a:focus-visible)::after,
+.photos-album .wp-block-gallery figure.wp-block-image:has(a:focus-visible)::after {
+	inset: 14px;
+	opacity: 1;
+}
+
+/*
  * Infinite scroll (turned on by the photo viewer's script): the page links stay in the
  * page, invisible, as the point that triggers loading more; without JavaScript they show.
  */
@@ -337,6 +386,13 @@ Text Domain: photos
 	.photos-grid .is-revealed img,
 	.photos-album .wp-block-gallery .is-revealed img {
 		animation-name: photos-tile-fade;
+	}
+
+	/* The corners just fade in, already in place. */
+	.photos-grid .wp-block-post-featured-image::after,
+	.photos-album .wp-block-gallery figure.wp-block-image::after {
+		inset: 14px;
+		transition: opacity 0.2s ease;
 	}
 }
 
