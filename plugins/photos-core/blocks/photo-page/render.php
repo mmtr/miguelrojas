@@ -60,17 +60,29 @@ $photos_social = static function () use ( $photos_post ) {
 <!-- wp:post-comments-form /--></div>
 <!-- /wp:comments -->';
 
-	$context = array(
-		'postId'   => $photos_post->ID,
-		'postType' => $photos_post->post_type,
-	);
-	$html    = '';
+	// render_block() rather than WP_Block directly: Jetpack registers some of its blocks
+	// (Like among them) only when render_block() first meets them on the front end.
+	// Unregistered blocks (no Jetpack, e.g. locally) render nothing.
+	$add_context = static function ( $context ) use ( $photos_post ) {
+		$context['postId']   = $photos_post->ID;
+		$context['postType'] = $photos_post->post_type;
+		return $context;
+	};
+	add_filter( 'render_block_context', $add_context );
+	$html = '';
 	foreach ( parse_blocks( $markup ) as $parsed ) {
-		if ( ! empty( $parsed['blockName'] ) && WP_Block_Type_Registry::get_instance()->is_registered( $parsed['blockName'] ) ) {
-			$html .= ( new WP_Block( $parsed, $context ) )->render();
+		if ( ! empty( $parsed['blockName'] ) ) {
+			$html .= render_block( $parsed );
 		}
 	}
-	return $html;
+	remove_filter( 'render_block_context', $add_context );
+
+	// The section is #comments (also when there are none yet); the title can't share it.
+	$tags = new WP_HTML_Tag_Processor( $html );
+	while ( $tags->next_tag( array( 'class_name' => 'wp-block-comments-title' ) ) ) {
+		$tags->remove_attribute( 'id' );
+	}
+	return $tags->get_updated_html();
 };
 ?>
 <div
