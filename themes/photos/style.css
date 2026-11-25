@@ -181,6 +181,58 @@ Text Domain: photos
 	display: none;
 }
 
+/*
+ * Footer: a line and the subscribe form (Jetpack; signed-in WordPress.com users get a
+ * one-click button), social links, and the WordPress credit, centered like the header.
+ */
+.photos-footer__inner {
+	gap: 1.25rem;
+	text-align: center;
+}
+
+.photos-footer p {
+	margin: 0;
+}
+
+.photos-footer__lead {
+	font-size: var(--wp--preset--font-size--medium);
+	font-weight: 500;
+}
+
+.photos-footer .photos-subscribe {
+	width: min(100%, 26rem);
+	margin: 0;
+}
+
+.photos-social {
+	gap: 0.75rem !important;
+	margin: 0.5rem 0 0;
+	color: var(--wp--preset--color--contrast);
+}
+
+.photos-social .wp-social-link {
+	color: inherit;
+}
+
+.photos-social .wp-social-link:hover {
+	color: var(--wp--preset--color--muted);
+	transform: none;
+}
+
+.photos-footer__credit {
+	color: var(--wp--preset--color--muted);
+	font-size: var(--wp--preset--font-size--small);
+}
+
+.photos-footer__credit a {
+	color: inherit;
+	text-underline-offset: 0.2em;
+}
+
+.photos-footer__credit a:hover {
+	color: var(--wp--preset--color--contrast);
+}
+
 /* Single photo: fit the whole image on screen, whatever its orientation. */
 .wp-block-post-featured-image.photos-hero img {
 	display: block;
