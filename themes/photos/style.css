@@ -9,7 +9,19 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: photos
 */
 
-/* Logo: "Miguel" in the text color, "Rojas" in the accent red. */
+/*
+ * Logo: "Miguel" in the text color, "Rojas" in the accent red, and the tagline under it
+ * at exactly its width (see blocks/logo/render.php).
+ */
+.photos-brand {
+	--photos-logo-height: 1.125rem;
+
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: calc(var(--photos-logo-height) * 0.45);
+}
+
 .photos-logo {
 	display: inline-flex;
 	color: var(--wp--preset--color--contrast);
@@ -25,23 +37,34 @@ Text Domain: photos
 .photos-logo__svg {
 	display: block;
 	width: auto;
-	height: 1.125rem;
+	height: var(--photos-logo-height);
 }
 
 .photos-logo__last {
 	color: var(--wp--preset--color--accent);
 }
 
-@media (max-width: 480px) {
-	.photos-logo__svg {
-		height: 0.875rem;
-	}
-}
-
-/* Tagline (Settings → General): beside the logo, or under it on narrow screens. */
 .photos-tagline {
 	margin: 0;
-	letter-spacing: 0.02em;
+	color: var(--wp--preset--color--muted);
+	line-height: 0;
+}
+
+/* Its viewBox is as wide as the logo's, so at this height it's exactly as wide. */
+.photos-tagline__svg {
+	display: block;
+	width: auto;
+	height: calc(var(--photos-logo-height) * var(--photos-tagline-ratio));
+	overflow: visible;
+	fill: currentColor;
+	font-family: var(--wp--preset--font-family--jost);
+	font-weight: 300;
+}
+
+@media (max-width: 480px) {
+	.photos-brand {
+		--photos-logo-height: 1rem;
+	}
 }
 
 /*

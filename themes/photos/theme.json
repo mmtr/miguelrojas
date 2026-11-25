@@ -27,6 +27,20 @@
 					"slug": "sans",
 					"name": "System Sans",
 					"fontFamily": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+				},
+				{
+					"slug": "jost",
+					"name": "Jost",
+					"fontFamily": "Jost, sans-serif",
+					"fontFace": [
+						{
+							"fontFamily": "Jost",
+							"fontWeight": "300",
+							"fontStyle": "normal",
+							"fontDisplay": "swap",
+							"src": [ "file:./assets/fonts/jost-300-latin.woff2" ]
+						}
+					]
 				}
 			],
 			"fontSizes": [
