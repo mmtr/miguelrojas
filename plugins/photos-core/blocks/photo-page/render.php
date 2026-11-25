@@ -23,8 +23,6 @@ $photos_items    = photos_get_details_items( $photos_post->ID );
 $photos_meta     = photos_details_meta_items( $photos_items );
 $photos_exif     = photos_details_exif_items( $photos_items );
 $photos_social   = photos_has_social( $photos_post );
-$photos_src      = $photos_image_id ? wp_get_attachment_image_src( $photos_image_id, 'full' ) : false;
-$photos_portrait = $photos_src && $photos_src[2] > $photos_src[1]; // Details go beside portrait photos on wide screens.
 
 // The theme's wordmark if it has one (shown light on this dark page), else the site name.
 $photos_logo_file = get_theme_file_path( 'assets/logo.svg' );
@@ -46,7 +44,7 @@ $photos_details_list = static function ( $items, $class ) {
 	return '<ul class="photos-exif ' . esc_attr( $class ) . '">' . $html . '</ul>';
 };
 ?>
-<div <?php echo get_block_wrapper_attributes( array( 'class' => 'photos-viewer photos-photo-page' . ( $photos_portrait ? ' is-portrait' : '' ) ) ); ?>>
+<div <?php echo get_block_wrapper_attributes( array( 'class' => 'photos-viewer photos-photo-page' ) ); ?>>
 	<a class="photos-viewer__home" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
 		<?php echo $photos_logo ? $photos_logo : esc_html( get_bloginfo( 'name' ) ); // phpcs:ignore WordPress.Security.EscapeOutput -- theme file, not user input. ?>
 	</a>

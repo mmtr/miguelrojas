@@ -187,13 +187,19 @@ body:has(.photos-photo-page) {
 	display: none !important;
 }
 
-/* Just under the photo: the camera settings (left), the Like button (right). */
+/* Just under the photo: the camera settings (left), the Like button (right; under the
+   settings when the photo is too narrow for both, e.g. portraits). */
 .photos-viewer__bar {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: flex-start;
 	justify-content: space-between;
 	gap: 0.6rem 2rem;
 	padding-top: 0.75rem;
+}
+
+.photos-viewer__bar > .photos-exif {
+	flex: 1 1 22rem;
 }
 
 .photos-exif {
@@ -579,103 +585,6 @@ body:has(.photos-photo-page) {
 
 .photos-viewer__next {
 	right: 1rem;
-}
-
-/*
- * Portrait photos on a wide window: the stacked layout would leave wide empty sides, so
- * the details go beside the photo instead (title, place and date, the settings as a list,
- * the Like button, the description and comments), and the photo stays in view while they
- * scroll. The page knows the photo's shape from the server, the viewer from its data.
- */
-@media (min-width: 900px) and (min-aspect-ratio: 1/1) {
-	dialog.photos-viewer.is-portrait[open],
-	.photos-photo-page.is-portrait {
-		--photos-viewer-panel: 22rem;
-
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) var(--photos-viewer-panel);
-		/* max-content: in the viewer (a fixed-height dialog) auto rows got squeezed. */
-		grid-template-rows: max-content max-content 1fr;
-		align-items: start;
-		background:
-			linear-gradient(rgb(255 255 255 / 0.08) 0 0) calc(100% - var(--photos-viewer-panel)) 0 / 1px 100% no-repeat,
-			var(--photos-viewer-bg);
-	}
-
-	.photos-viewer.is-portrait .photos-viewer__screen,
-	.photos-viewer.is-portrait .photos-viewer__figure {
-		display: contents;
-	}
-
-	.photos-viewer.is-portrait .photos-viewer__photo {
-		grid-column: 1;
-		grid-row: 1 / span 3;
-		position: sticky;
-		top: var(--photos-sticky-top, 0px);
-		box-sizing: border-box;
-		display: grid;
-		grid-template: minmax(0, 1fr) / minmax(0, 1fr);
-		place-items: center;
-		height: var(--photos-viewer-height);
-		padding: 2.5rem 4.5rem;
-	}
-
-	.photos-viewer.is-portrait .photos-viewer__image {
-		max-width: 100%;
-		max-height: 100%;
-	}
-
-	.photos-viewer.is-portrait .photos-viewer__head {
-		grid-column: 2;
-		grid-row: 1;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 0.6rem;
-		width: auto;
-		padding: 4.5rem 2rem 0.75rem;
-		contain: none;
-	}
-
-	.photos-viewer.is-portrait .photos-viewer__title {
-		font-size: 1.375rem;
-	}
-
-	.photos-viewer.is-portrait .photos-viewer__meta.photos-exif {
-		margin-left: 0;
-	}
-
-	.photos-viewer.is-portrait .photos-viewer__bar {
-		grid-column: 2;
-		grid-row: 2;
-		flex-direction: column;
-		align-items: stretch;
-		gap: 1.25rem;
-		width: auto;
-		padding: 0.75rem 2rem 1.5rem;
-		contain: none;
-	}
-
-	.photos-viewer.is-portrait .photos-exif {
-		flex-direction: column;
-		gap: 0.65rem;
-		font-size: 0.875rem;
-	}
-
-	.photos-viewer.is-portrait .photos-viewer__like {
-		flex: none;
-	}
-
-	.photos-viewer.is-portrait .photos-viewer__more {
-		grid-column: 2;
-		grid-row: 3;
-		padding: 1.5rem 2rem 3rem;
-	}
-
-	/* The page's logo moves to the top of the panel, clear of the photo. */
-	.photos-photo-page.is-portrait .photos-viewer__home {
-		top: 1.75rem;
-		left: calc(100% - var(--photos-viewer-panel) + 2rem);
-	}
 }
 
 /* Narrow screens: everything stacks and scrolls; the photo takes the screen's width. */
