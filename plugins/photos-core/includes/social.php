@@ -18,6 +18,22 @@ function photos_has_social( $post ) {
 }
 
 /**
+ * The line that starts the comments, peeking in under the photo: "3 comments", or an
+ * invitation when there are none yet.
+ *
+ * @param WP_Post $post Post.
+ * @return string
+ */
+function photos_comments_heading( $post ) {
+	$count = (int) get_comments_number( $post );
+	if ( ! $count ) {
+		return __( 'Leave a comment', 'photos-core' );
+	}
+	/* translators: %s: number of comments. */
+	return sprintf( _n( '%s comment', '%s comments', $count, 'photos-core' ), number_format_i18n( $count ) );
+}
+
+/**
  * Render block markup for a post (its likes or comments).
  *
  * render_block() rather than WP_Block directly: Jetpack registers some of its blocks

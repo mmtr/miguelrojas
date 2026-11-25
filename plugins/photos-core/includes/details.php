@@ -280,19 +280,15 @@ function photos_get_description( $post ) {
 }
 
 /**
- * Details shown on the title line: place and date taken, as "Place · Date".
+ * Details shown on the title line: place and date taken.
  *
  * @param array[] $items Items from photos_get_image_details_items().
- * @return string
+ * @return array[]
  */
-function photos_details_meta_line( $items ) {
-	$parts = array();
-	foreach ( $items as $item ) {
-		if ( in_array( $item['key'], array( 'location', 'taken' ), true ) ) {
-			$parts[] = $item['value'];
-		}
-	}
-	return implode( ' · ', $parts );
+function photos_details_meta_items( $items ) {
+	return array_values(
+		array_filter( $items, static fn( $item ) => in_array( $item['key'], array( 'location', 'taken' ), true ) )
+	);
 }
 
 /**
@@ -330,6 +326,7 @@ function photos_build_viewer_photo( $image_id, $fields ) {
 			'items'         => array(),
 			'alt'           => '',
 			'social'        => false,
+			'comments'      => '',
 		),
 		$fields
 	);
@@ -367,6 +364,7 @@ function photos_get_viewer_photo( $post ) {
 			'description' => photos_get_description( $post ),
 			'items'       => photos_get_details_items( $post->ID ),
 			'social'      => photos_has_social( $post ), // The viewer loads them from the photo's page.
+			'comments'    => photos_comments_heading( $post ),
 		)
 	);
 }

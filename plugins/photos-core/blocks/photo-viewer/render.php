@@ -85,59 +85,66 @@ $photos_icon = static function ( $path ) {
 		<?php echo $photos_icon( 'M6 6l12 12M18 6L6 18' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 	</button>
 
-	<div class="photos-viewer__screen">
-		<header class="photos-viewer__head">
-			<h2 class="photos-viewer__title" id="photos-viewer-title" data-wp-text="state.current.title"></h2>
-			<p class="photos-viewer__meta" data-wp-text="state.meta" data-wp-bind--hidden="!state.meta"></p>
-		</header>
+	<div
+		class="photos-viewer__screen"
+		data-wp-on--click="actions.onStageClick"
+		data-wp-on--touchstart="actions.onTouchStart"
+		data-wp-on--touchend="actions.onTouchEnd"
+	>
+		<div class="photos-viewer__figure">
+			<header class="photos-viewer__head">
+				<h2 class="photos-viewer__title" id="photos-viewer-title" data-wp-text="state.current.title"></h2>
+				<ul class="photos-exif photos-viewer__meta">
+					<template data-wp-each--item="state.metaItems" data-wp-each-key="context.item.key">
+						<li class="photos-exif__item" data-wp-bind--data-key="context.item.key"><span class="photos-viewer__visually-hidden" data-wp-text="context.item.label"></span><span data-wp-text="context.item.value"></span></li>
+					</template>
+				</ul>
+			</header>
 
-		<div
-			class="photos-viewer__stage"
-			data-wp-on--click="actions.onStageClick"
-			data-wp-on--touchstart="actions.onTouchStart"
-			data-wp-on--touchend="actions.onTouchEnd"
-		>
-			<button type="button" class="photos-viewer__prev" data-wp-on--click="actions.prev" data-wp-bind--hidden="!state.hasPrev" aria-label="<?php esc_attr_e( 'Previous photo', 'photos-core' ); ?>">
-				<?php echo $photos_icon( 'M15 5l-7 7 7 7' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
-			</button>
-			<img
-				class="photos-viewer__image"
-				alt=""
-				decoding="async"
-				sizes="(min-width: 900px) calc(100vw - 9rem), 100vw"
-				data-wp-bind--src="state.current.src"
-				data-wp-bind--srcset="state.current.srcset"
-				data-wp-bind--width="state.current.width"
-				data-wp-bind--height="state.current.height"
-				data-wp-bind--alt="state.current.alt"
-			>
-			<span class="photos-viewer__spinner" role="status" data-wp-bind--hidden="!state.loading">
-				<span class="photos-viewer__visually-hidden"><?php esc_html_e( 'Loading photo', 'photos-core' ); ?></span>
-			</span>
-			<button type="button" class="photos-viewer__next" data-wp-on--click="actions.next" data-wp-bind--hidden="!state.hasNext" aria-label="<?php esc_attr_e( 'Next photo', 'photos-core' ); ?>">
-				<?php echo $photos_icon( 'M9 5l7 7-7 7' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
-			</button>
+			<div class="photos-viewer__photo" data-wp-on--click="actions.onStageClick">
+				<button type="button" class="photos-viewer__prev" data-wp-on--click="actions.prev" data-wp-bind--hidden="!state.hasPrev" aria-label="<?php esc_attr_e( 'Previous photo', 'photos-core' ); ?>">
+					<?php echo $photos_icon( 'M15 5l-7 7 7 7' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+				</button>
+				<img
+					class="photos-viewer__image"
+					alt=""
+					decoding="async"
+					sizes="(min-width: 900px) calc(100vw - 9rem), 100vw"
+					data-wp-bind--src="state.current.src"
+					data-wp-bind--srcset="state.current.srcset"
+					data-wp-bind--width="state.current.width"
+					data-wp-bind--height="state.current.height"
+					data-wp-bind--alt="state.current.alt"
+				>
+				<span class="photos-viewer__spinner" role="status" data-wp-bind--hidden="!state.loading">
+					<span class="photos-viewer__visually-hidden"><?php esc_html_e( 'Loading photo', 'photos-core' ); ?></span>
+				</span>
+				<button type="button" class="photos-viewer__next" data-wp-on--click="actions.next" data-wp-bind--hidden="!state.hasNext" aria-label="<?php esc_attr_e( 'Next photo', 'photos-core' ); ?>">
+					<?php echo $photos_icon( 'M9 5l7 7-7 7' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+				</button>
+			</div>
+
+			<footer class="photos-viewer__bar">
+				<ul class="photos-exif">
+					<template data-wp-each--item="state.exif" data-wp-each-key="context.item.key">
+						<li class="photos-exif__item" data-wp-bind--data-key="context.item.key"><span class="photos-viewer__visually-hidden" data-wp-text="context.item.label"></span><span data-wp-text="context.item.value"></span></li>
+					</template>
+				</ul>
+				<?php if ( $photos_social ) : ?>
+					<div class="photos-viewer__like" data-wp-bind--hidden="!state.current.social">
+						<?php // Jetpack's Like button takes its text and link colors from these. ?>
+						<span class="sd-text-color" hidden></span><a class="sd-link-color" hidden></a>
+						<div class="photos-viewer__like-content is-loading"></div>
+					</div>
+				<?php endif; ?>
+			</footer>
 		</div>
-
-		<footer class="photos-viewer__bar">
-			<ul class="photos-exif">
-				<template data-wp-each--item="state.exif" data-wp-each-key="context.item.key">
-					<li class="photos-exif__item" data-wp-bind--data-key="context.item.key"><span class="photos-viewer__visually-hidden" data-wp-text="context.item.label"></span><span data-wp-text="context.item.value"></span></li>
-				</template>
-			</ul>
-			<?php if ( $photos_social ) : ?>
-				<div class="photos-viewer__like" data-wp-bind--hidden="!state.current.social">
-					<?php // Jetpack's Like button takes its text and link colors from these. ?>
-					<span class="sd-text-color" hidden></span><a class="sd-link-color" hidden></a>
-					<div class="photos-viewer__like-content is-loading"></div>
-				</div>
-			<?php endif; ?>
-		</footer>
 	</div>
 
 	<section class="photos-viewer__more" data-wp-bind--hidden="!state.hasMore">
 		<p class="photos-viewer__description" data-wp-text="state.current.description" data-wp-bind--hidden="!state.current.description"></p>
 		<?php if ( $photos_social ) : ?>
+			<h2 class="photos-viewer__comments-title" data-wp-text="state.current.comments" data-wp-bind--hidden="!state.current.social"></h2>
 			<div class="photos-viewer__comments" data-wp-bind--hidden="!state.current.social">
 				<div class="photos-viewer__comments-inner is-loading" aria-busy="true">
 					<div class="photos-viewer__social-placeholder" aria-hidden="true">

@@ -8,7 +8,7 @@
  */
 import { store, getElement, withSyncEvent } from '@wordpress/interactivity';
 
-const EMPTY = { title: '', description: '', url: null, imageId: null, index: null, items: [], src: null, srcset: null, width: null, height: null, alt: '', social: false };
+const EMPTY = { title: '', description: '', url: null, imageId: null, index: null, items: [], src: null, srcset: null, width: null, height: null, alt: '', social: false, comments: '' };
 const PHOTO_HASH = /^#photo-(\d+)$/;
 const SWIPE_DISTANCE = 50;
 const LOAD_AHEAD = 1000; // Start loading the next page this many pixels before the end.
@@ -294,11 +294,8 @@ const { state, actions, callbacks } = store( 'photos', {
 			return state.isOpen && ( state.currentIndex < state.photos.length - 1 || state.hasMorePages );
 		},
 		// The title line: place and date taken.
-		get meta() {
-			return ( state.current.items || [] )
-				.filter( ( item ) => item.key === 'location' || item.key === 'taken' )
-				.map( ( item ) => item.value )
-				.join( ' · ' );
+		get metaItems() {
+			return ( state.current.items || [] ).filter( ( item ) => item.key === 'location' || item.key === 'taken' );
 		},
 		// The bar under the photo: the camera settings.
 		get exif() {
