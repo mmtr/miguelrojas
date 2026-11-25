@@ -30,10 +30,11 @@ add_action(
 /*
  * Thumbnail sizes for the photo grids (home and album pages), so browsers download an
  * image about as wide as the tile, not the 1024 px WordPress assumes. Tiles are at least
- * 17.5rem with a 0.875rem gap (style.css) inside the wide layout (1440 px at most, minus
- * the page padding): 4 columns from 1258 px, 3 from 945 px, 2 from 624 px, else 1.
+ * 17.5rem with a 0.875rem gap (style.css) across the window minus the page padding: 1
+ * column, 2 from 624 px, 3 from 945 px, then 4 or more from 1258 px, where a tile is
+ * never wider than 354 px.
  */
-const PHOTOS_TILE_SIZES = '(min-width: 1536px) 350px, (min-width: 1258px) calc((100vw - 138px) / 4), (min-width: 945px) calc((92vw - 28px) / 3), (min-width: 624px) calc((92vw - 14px) / 2), calc(100vw - 48px)';
+const PHOTOS_TILE_SIZES = '(min-width: 1258px) 354px, (min-width: 945px) calc((92vw - 28px) / 3), (min-width: 624px) calc((92vw - 14px) / 2), calc(100vw - 48px)';
 
 /**
  * Set the tile sizes on every image in a grid's HTML (keeping "auto", which browsers
