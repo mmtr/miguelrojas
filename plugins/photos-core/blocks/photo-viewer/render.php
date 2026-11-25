@@ -125,9 +125,17 @@ $photos_icon = static function ( $path ) {
 			</template>
 		</dl>
 		<?php if ( $photos_social ) : ?>
-			<section class="photos-viewer__social" data-wp-bind--hidden="!state.current.social" aria-label="<?php esc_attr_e( 'Likes and comments', 'photos-core' ); ?>">
+			<section class="photos-viewer__social is-loading" data-wp-bind--hidden="!state.current.social" aria-label="<?php esc_attr_e( 'Likes and comments', 'photos-core' ); ?>" aria-busy="true">
 				<?php // Jetpack's Like button takes its text and link colors from these. ?>
 				<span class="sd-text-color" hidden></span><a class="sd-link-color" hidden></a>
+				<div class="photos-viewer__social-placeholder" aria-hidden="true">
+					<span class="photos-viewer__skeleton-row">
+						<span class="photos-viewer__skeleton photos-viewer__skeleton--button"></span>
+						<span class="photos-viewer__skeleton photos-viewer__skeleton--text"></span>
+					</span>
+					<span class="photos-viewer__skeleton photos-viewer__skeleton--title"></span>
+					<span class="photos-viewer__skeleton photos-viewer__skeleton--box"></span>
+				</div>
 				<div class="photos-viewer__social-content"></div>
 			</section>
 		<?php endif; ?>

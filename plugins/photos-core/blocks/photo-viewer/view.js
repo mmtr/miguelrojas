@@ -67,6 +67,9 @@ const findPhotoIndex = ( target ) => {
  * runs again for each photo; its Like script looks for new buttons on scroll.
  */
 const SOCIAL_DELAY = 200; // Quick arrow presses don't load every photo's comments.
+const SOCIAL_MAX_WAIT = 3000; // Longest wait for Jetpack's parts before showing the section.
+const SOCIAL_PENDING = '.jetpack-comments:not(.is-mounted):not(.is-plain), .jetpack-likes-widget-unloaded, .jetpack-likes-widget-loading';
+const LIKE_SETTLE = 150; // The Like button draws itself just after its frame loads.
 const socialSections = new Map(); // Photo URL → promise of its section's HTML.
 let socialTimer = 0;
 let socialToken = 0;
@@ -119,37 +122,56 @@ const runScriptAgain = ( id ) => {
 	document.body.append( script );
 };
 
+// Jetpack's comment form and Like button fill in after the HTML is added: wait for them,
+// so the section appears in one go.
+const whenSocialReady = ( content ) =>
+	new Promise( ( resolve ) => {
+		const start = Date.now();
+		const check = () => {
+			if ( content.querySelector( SOCIAL_PENDING ) && Date.now() - start < SOCIAL_MAX_WAIT ) {
+				setTimeout( check, 100 );
+			} else {
+				setTimeout( resolve, content.querySelector( '.jetpack-likes-widget-wrapper' ) ? LIKE_SETTLE : 0 );
+			}
+		};
+		check();
+	} );
+
 const showSocial = ( photo ) => {
 	const content = document.querySelector( '.photos-viewer__social-content' );
 	if ( ! content ) {
 		return;
 	}
+	const section = content.parentElement;
+	const setLoading = ( isLoading ) => {
+		section.classList.toggle( 'is-loading', isLoading );
+		section.setAttribute( 'aria-busy', String( isLoading ) );
+	};
 	clearTimeout( socialTimer );
 	const token = ++socialToken;
+	setLoading( true ); // The previous photo's stay hidden from now on.
 	if ( ! photo?.social ) {
 		content.replaceChildren();
 		return;
 	}
-	content.classList.add( 'is-loading' ); // The previous photo's stay hidden until then.
 	socialTimer = setTimeout( () => {
-		fetchSocial( photo.url ).then(
-			( html ) => {
+		fetchSocial( photo.url )
+			.then( ( html ) => {
 				if ( token !== socialToken ) {
 					return;
 				}
 				content.innerHTML = withNewLikeId( html );
-				content.classList.remove( 'is-loading' );
 				runInlineScripts( content );
 				runScriptAgain( 'jetpack-comments-js' );
 				window.dispatchEvent( new Event( 'scroll' ) );
-			},
-			() => {
+				return whenSocialReady( content );
+			} )
+			.catch( () => content.replaceChildren() )
+			.finally( () => {
 				if ( token === socialToken ) {
-					content.replaceChildren();
-					content.classList.remove( 'is-loading' );
+					setLoading( false );
 				}
-			}
-		);
+			} );
 	}, SOCIAL_DELAY );
 };
 
