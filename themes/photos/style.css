@@ -68,6 +68,21 @@ Text Domain: photos
 }
 
 /*
+ * Header: the logo as far from the top of the page as from the content below. The
+ * header's own padding does both, so the usual gap before the content is dropped.
+ * Centered except on phones.
+ */
+.wp-site-blocks > header:has(.photos-header) + * {
+	margin-block-start: 0;
+}
+
+@media (min-width: 481px) {
+	.photos-header .photos-brand {
+		margin-inline: auto;
+	}
+}
+
+/*
  * Square thumbnails trimmed at the bottom: the watermark sits in the bottom-right
  * corner, within the bottom 5% of a landscape photo, so each thumbnail is drawn 6%
  * taller than its square and the overflow is clipped. Portrait photos are cropped from
