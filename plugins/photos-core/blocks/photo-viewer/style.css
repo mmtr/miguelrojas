@@ -267,6 +267,32 @@ body:has(.photos-photo-page) {
 	min-height: 0;
 }
 
+/*
+ * While the Like button loads (the viewer fetching it, or Jetpack's frame still
+ * loading): a shimmering pill in its shape instead of Jetpack's "Loading..." text, after a
+ * short delay so fast loads don't flash it.
+ */
+.photos-viewer__like {
+	position: relative;
+}
+
+.photos-viewer__like:has(.photos-viewer__like-content.is-loading)::before,
+.photos-viewer__like:has(.jetpack-likes-widget-wrapper:not(.jetpack-likes-widget-loaded))::before {
+	content: "";
+	position: absolute;
+	top: 0.25rem;
+	left: 0;
+	width: 4.5rem;
+	height: 1.75rem;
+	border-radius: 4px;
+	background: linear-gradient(90deg, rgb(255 255 255 / 0.06) 30%, rgb(255 255 255 / 0.13) 50%, rgb(255 255 255 / 0.06) 70%) 0 0 / 300% 100%;
+	animation: photos-viewer-shimmer 1.4s ease-in-out infinite, photos-viewer-appear 0.2s ease 0.15s both;
+}
+
+.photos-viewer__like .jetpack-likes-widget-wrapper:not(.jetpack-likes-widget-loaded) .likes-widget-placeholder {
+	visibility: hidden;
+}
+
 /* Below the first screen: the description and the comments, in a readable column. Its
    top shows at the bottom of the first screen. */
 .photos-viewer__more {
@@ -376,8 +402,9 @@ body:has(.photos-photo-page) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.photos-viewer__skeleton {
-		animation: none;
+	.photos-viewer__skeleton,
+	.photos-viewer__like::before {
+		animation: none !important;
 	}
 
 	.photos-viewer__like-content,
