@@ -38,6 +38,12 @@ Text Domain: photos
 	}
 }
 
+/* Tagline (Settings → General): beside the logo, or under it on narrow screens. */
+.photos-tagline {
+	margin: 0;
+	letter-spacing: 0.02em;
+}
+
 /*
  * Square thumbnails trimmed at the bottom: the watermark sits in the bottom-right
  * corner, within the bottom 5% of a landscape photo, so each thumbnail is drawn 6%
