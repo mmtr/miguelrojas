@@ -62,34 +62,38 @@ const findPhotoIndex = ( target ) => {
 };
 
 /*
- * Likes and comments: the viewer takes the section from the photo's page and puts it in
- * the panel. Jetpack sets up its comment form only when its script runs, so the script
- * runs again for each photo; its Like script looks for new buttons on scroll.
+ * Likes and comments: the viewer takes the Like button and the comments from the photo's
+ * page and puts them in the bar under the photo and below it. Jetpack sets up its comment
+ * form only when its script runs, so the script runs again for each photo; its Like
+ * script looks for new buttons on scroll.
  */
 const SOCIAL_DELAY = 200; // Quick arrow presses don't load every photo's comments.
-const SOCIAL_MAX_WAIT = 3000; // Longest wait for Jetpack's parts before showing the section.
+const SOCIAL_MAX_WAIT = 3000; // Longest wait for Jetpack's parts before showing them.
 const SOCIAL_PENDING = '.jetpack-comments:not(.is-mounted):not(.is-plain), .jetpack-likes-widget-unloaded, .jetpack-likes-widget-loading';
 const LIKE_SETTLE = 150; // The Like button draws itself just after its frame loads.
-const socialSections = new Map(); // Photo URL → promise of its section's HTML.
+const socialParts = new Map(); // Photo URL → promise of { like, comments } HTML.
 let socialTimer = 0;
 let socialToken = 0;
 let likeCount = 0;
 
 const fetchSocial = ( url ) => {
-	if ( ! socialSections.has( url ) ) {
+	if ( ! socialParts.has( url ) ) {
 		const request = fetch( url, { credentials: 'same-origin' } )
 			.then( ( response ) => ( response.ok ? response.text() : Promise.reject( new Error( response.statusText ) ) ) )
 			.then( ( html ) => {
 				const page = new DOMParser().parseFromString( html, 'text/html' );
-				return page.querySelector( '.photos-photo-page .photos-viewer__social' )?.innerHTML ?? '';
+				return {
+					like: page.querySelector( '.photos-photo-page .photos-viewer__like' )?.innerHTML ?? '',
+					comments: page.querySelector( '.photos-photo-page .photos-viewer__comments' )?.innerHTML ?? '',
+				};
 			} )
 			.catch( ( error ) => {
-				socialSections.delete( url ); // Try again next time.
+				socialParts.delete( url ); // Try again next time.
 				throw error;
 			} );
-		socialSections.set( url, request );
+		socialParts.set( url, request );
 	}
-	return socialSections.get( url );
+	return socialParts.get( url );
 };
 
 // Jetpack's Like script remembers each button's id; a photo shown again needs a new one.
@@ -123,50 +127,58 @@ const runScriptAgain = ( id ) => {
 };
 
 // Jetpack's comment form and Like button fill in after the HTML is added: wait for them,
-// so the section appears in one go.
-const whenSocialReady = ( content ) =>
+// so they appear in one go.
+const whenSocialReady = ( roots ) =>
 	new Promise( ( resolve ) => {
 		const start = Date.now();
+		const pending = () => roots.some( ( root ) => root.querySelector( SOCIAL_PENDING ) );
 		const check = () => {
-			if ( content.querySelector( SOCIAL_PENDING ) && Date.now() - start < SOCIAL_MAX_WAIT ) {
+			if ( pending() && Date.now() - start < SOCIAL_MAX_WAIT ) {
 				setTimeout( check, 100 );
 			} else {
-				setTimeout( resolve, content.querySelector( '.jetpack-likes-widget-wrapper' ) ? LIKE_SETTLE : 0 );
+				setTimeout( resolve, roots.some( ( root ) => root.querySelector( '.jetpack-likes-widget-wrapper' ) ) ? LIKE_SETTLE : 0 );
 			}
 		};
 		check();
 	} );
 
 const showSocial = ( photo ) => {
-	const content = document.querySelector( '.photos-viewer__social-content' );
-	if ( ! content ) {
+	const like = document.querySelector( '.photos-viewer__like-content' );
+	const comments = document.querySelector( '.photos-viewer__comments-inner' );
+	const content = comments?.querySelector( '.photos-viewer__comments-content' );
+	if ( ! like || ! comments || ! content ) {
 		return;
 	}
-	const section = content.parentElement;
 	const setLoading = ( isLoading ) => {
-		section.classList.toggle( 'is-loading', isLoading );
-		section.setAttribute( 'aria-busy', String( isLoading ) );
+		like.classList.toggle( 'is-loading', isLoading );
+		comments.classList.toggle( 'is-loading', isLoading );
+		comments.setAttribute( 'aria-busy', String( isLoading ) );
 	};
 	clearTimeout( socialTimer );
 	const token = ++socialToken;
 	setLoading( true ); // The previous photo's stay hidden from now on.
 	if ( ! photo?.social ) {
+		like.replaceChildren();
 		content.replaceChildren();
 		return;
 	}
 	socialTimer = setTimeout( () => {
 		fetchSocial( photo.url )
-			.then( ( html ) => {
+			.then( ( parts ) => {
 				if ( token !== socialToken ) {
 					return;
 				}
-				content.innerHTML = withNewLikeId( html );
+				like.innerHTML = withNewLikeId( parts.like );
+				content.innerHTML = parts.comments;
 				runInlineScripts( content );
 				runScriptAgain( 'jetpack-comments-js' );
 				window.dispatchEvent( new Event( 'scroll' ) );
-				return whenSocialReady( content );
+				return whenSocialReady( [ like, content ] );
 			} )
-			.catch( () => content.replaceChildren() )
+			.catch( () => {
+				like.replaceChildren();
+				content.replaceChildren();
+			} )
 			.finally( () => {
 				if ( token === socialToken ) {
 					setLoading( false );
@@ -243,7 +255,7 @@ const loadWhileNearEnd = async () => {
 };
 
 // Must match the viewer image's sizes attribute, so preloading fetches the same file.
-const IMAGE_SIZES = '(min-width: 900px) calc(100vw - 22rem), 100vw';
+const IMAGE_SIZES = '(min-width: 900px) calc(100vw - 9rem), 100vw';
 const ready = new Set(); // Photos (by src) whose image is downloaded and decoded.
 let navigation = 0; // Bumped on every navigation, so only the latest one is shown.
 let target = -1; // Photo being navigated to (shown or still loading); arrows step from it.
@@ -281,15 +293,24 @@ const { state, actions, callbacks } = store( 'photos', {
 		get hasNext() {
 			return state.isOpen && ( state.currentIndex < state.photos.length - 1 || state.hasMorePages );
 		},
-		// Home grid photos carry their number across the whole site; album photos don't.
-		get position() {
-			if ( ! state.isOpen ) {
-				return '';
-			}
-			const { index } = state.current;
-			return index && state.totalPhotos
-				? `${ index } / ${ state.totalPhotos }`
-				: `${ state.currentIndex + 1 } / ${ state.photos.length }`;
+		// The title line: place and date taken.
+		get meta() {
+			return ( state.current.items || [] )
+				.filter( ( item ) => item.key === 'location' || item.key === 'taken' )
+				.map( ( item ) => item.value )
+				.join( ' · ' );
+		},
+		// The bar under the photo: the camera settings.
+		get exif() {
+			return ( state.current.items || [] ).filter( ( item ) => item.key !== 'location' && item.key !== 'taken' );
+		},
+		// Portrait photos get the details beside them on wide screens (see style.css).
+		get isPortrait() {
+			const { width, height } = state.current;
+			return Boolean( width ) && height > width;
+		},
+		get hasMore() {
+			return Boolean( state.current.description || state.current.social );
 		},
 	},
 	actions: {
@@ -317,6 +338,7 @@ const { state, actions, callbacks } = store( 'photos', {
 				state.loading = false;
 				state.opening = false;
 				state.currentIndex = index;
+				document.querySelector( 'dialog.photos-viewer' )?.scrollTo( 0, 0 );
 				showSocial( photo );
 				document.title = `${ photo.title } – ${ state.siteName }`;
 

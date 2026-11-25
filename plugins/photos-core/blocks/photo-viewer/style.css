@@ -1,11 +1,15 @@
 /*
  * The photo viewer (full-screen dialog opened from the grid) and the photo page (the
- * same layout as a page, for reloads and shared links): the photo on a dark background,
- * its details beside it.
+ * same layout as a page, for reloads and shared links). The first screen is the photo, as
+ * large as it fits in red viewfinder corners, with the title, place and date above it and
+ * the camera settings and Like button below; the description and comments follow, a
+ * scroll away.
  */
 .photos-viewer {
 	--photos-viewer-bg: #121211;
-	--photos-viewer-panel: 22rem;
+	--photos-vf-color: #d7191f;
+	--photos-vf-arm: 22px;
+	--photos-vf-line: 2px;
 
 	box-sizing: border-box;
 	background: var(--photos-viewer-bg);
@@ -13,10 +17,12 @@
 }
 
 /*
- * The dialog. Margins and max-width use !important because the theme's layout rules
- * (also !important) would otherwise center it at content width.
+ * The dialog: scrolls to the comments. Margins and max-width use !important because the
+ * theme's layout rules (also !important) would otherwise center it at content width.
  */
 dialog.photos-viewer {
+	--photos-viewer-height: 100dvh;
+
 	position: fixed;
 	inset: 0;
 	width: 100%;
@@ -26,7 +32,13 @@ dialog.photos-viewer {
 	margin: 0 !important;
 	padding: 0;
 	border: 0;
-	overflow: hidden;
+	overflow-x: hidden;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+
+dialog.photos-viewer[open] {
+	display: block;
 }
 
 dialog.photos-viewer::backdrop {
@@ -37,12 +49,11 @@ html:has(dialog.photos-viewer[open]) {
 	overflow: hidden;
 }
 
-/* The page: fills the window below the admin bar (shown to logged-in users). */
+/* The page: its first screen fills the window below the admin bar (logged-in users). */
 .photos-photo-page {
 	--photos-viewer-height: calc(100dvh - var(--wp-admin--admin-bar--height, 0px));
 
 	position: relative;
-	min-height: var(--photos-viewer-height);
 	margin: 0 !important;
 }
 
@@ -50,33 +61,56 @@ body:has(.photos-photo-page) {
 	background: #121211;
 }
 
-dialog.photos-viewer[open],
-.photos-photo-page {
+.photos-viewer__screen {
+	position: relative;
 	display: grid;
-	grid-template-columns: minmax(0, 1fr) var(--photos-viewer-panel);
+	grid-template-rows: auto minmax(0, 1fr) auto;
+	height: var(--photos-viewer-height);
+}
+
+/* Title, then place and date, on one line. */
+.photos-viewer__head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: center;
+	gap: 0.2rem 0.9rem;
+	padding: 1.35rem 5rem 0.35rem;
+	text-align: center;
+}
+
+.photos-photo-page .photos-viewer__head {
+	padding-inline: 16rem;
+}
+
+.photos-viewer__title {
+	margin: 0;
+	color: inherit;
+	font-size: 1.25rem;
+	font-weight: 500;
+	line-height: 1.3;
+}
+
+.photos-viewer__meta {
+	margin: 0;
+	font-size: 0.875rem;
+	opacity: 0.6;
 }
 
 .photos-viewer__stage {
 	box-sizing: border-box;
 	position: relative;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	display: grid;
+	grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+	place-items: center;
 	min-height: 0;
-	padding: 3.5rem 4.5rem;
-}
-
-/* On the page the photo stays in view if the details are taller than the window. */
-.photos-photo-page .photos-viewer__stage {
-	position: sticky;
-	top: var(--wp-admin--admin-bar--height, 0px);
-	height: var(--photos-viewer-height);
+	padding: 0.5rem 4.5rem;
 }
 
 /*
  * Quick clicks on the arrows count as double/triple clicks, which made the browser
- * select (and tint) the photo. The photo area and buttons can't be selected; the
- * details panel still can.
+ * select (and tint) the photo. The photo area and buttons can't be selected; the text
+ * still can.
  */
 .photos-viewer__stage,
 .photos-viewer__close {
@@ -85,25 +119,36 @@ dialog.photos-viewer[open],
 	-webkit-tap-highlight-color: transparent;
 }
 
+/*
+ * The photo, as large as fits, with the viewfinder corners drawn in its own padding (so
+ * they follow it at any size, with no extra markup).
+ */
 .photos-viewer__image {
-	-webkit-user-drag: none;
-}
-
-.photos-viewer__image {
+	grid-area: 1 / 1;
 	display: block;
+	box-sizing: border-box;
 	width: auto;
 	height: auto;
 	max-width: 100%;
 	max-height: 100%;
+	padding: 14px;
 	object-fit: contain;
+	background:
+		linear-gradient(var(--photos-vf-color) 0 0) left top / var(--photos-vf-arm) var(--photos-vf-line),
+		linear-gradient(var(--photos-vf-color) 0 0) left top / var(--photos-vf-line) var(--photos-vf-arm),
+		linear-gradient(var(--photos-vf-color) 0 0) right top / var(--photos-vf-arm) var(--photos-vf-line),
+		linear-gradient(var(--photos-vf-color) 0 0) right top / var(--photos-vf-line) var(--photos-vf-arm),
+		linear-gradient(var(--photos-vf-color) 0 0) left bottom / var(--photos-vf-arm) var(--photos-vf-line),
+		linear-gradient(var(--photos-vf-color) 0 0) left bottom / var(--photos-vf-line) var(--photos-vf-arm),
+		linear-gradient(var(--photos-vf-color) 0 0) right bottom / var(--photos-vf-arm) var(--photos-vf-line),
+		linear-gradient(var(--photos-vf-color) 0 0) right bottom / var(--photos-vf-line) var(--photos-vf-arm);
+	background-repeat: no-repeat;
+	-webkit-user-drag: none;
+	transition: opacity 0.2s ease;
 }
 
 /* While the next photo loads, the current one dims and a spinner shows (after a short
    delay, so fast loads don't flash it). */
-.photos-viewer__image {
-	transition: opacity 0.2s ease;
-}
-
 .photos-viewer.is-loading .photos-viewer__image {
 	opacity: 0.35;
 }
@@ -150,88 +195,136 @@ dialog.photos-viewer[open],
 	white-space: nowrap;
 }
 
-.photos-viewer__panel {
-	overflow-y: auto;
-	padding: 4.5rem 2rem 2rem;
-	border-left: 1px solid rgb(255 255 255 / 0.08);
-	font-size: 0.9375rem;
-	line-height: 1.5;
-}
-
-.photos-viewer__position {
-	margin: 0 0 0.5rem;
-	font-size: 0.75rem;
-	font-variant-numeric: tabular-nums;
-	opacity: 0.6;
-}
-
-.photos-viewer__title {
-	margin: 0 0 1rem;
-	color: inherit;
-	font-size: 1.375rem;
-	font-weight: 500;
-	line-height: 1.25;
-}
-
-.photos-viewer__description {
-	margin: 0 0 1.75rem;
-	opacity: 0.85;
-}
-
-.photos-viewer .photos-details {
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
 .photos-viewer [hidden] {
 	display: none !important;
 }
 
-/* Likes and comments, under the details. */
-.photos-viewer__social {
-	position: relative;
-	margin-top: 2rem;
-	padding-top: 1.5rem;
-	border-top: 1px solid rgb(255 255 255 / 0.08);
-	scroll-margin-top: 1rem;
+/* Under the photo: the camera settings, each with an icon, and the Like button. */
+.photos-viewer__bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem 2rem;
+	min-height: 3.75rem;
+	padding: 0.25rem 1.5rem 0.75rem;
 }
 
-.photos-viewer__social a {
+.photos-exif {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem 1.4rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	font-size: 0.8125rem;
+	color: rgb(235 233 228 / 0.8);
+}
+
+.photos-exif__item {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45rem;
+	white-space: nowrap;
+}
+
+.photos-exif__item::before {
+	content: "";
+	flex: none;
+	width: 1.05rem;
+	height: 1.05rem;
+	background: currentColor;
+	-webkit-mask: var(--photos-exif-icon) center / contain no-repeat;
+	mask: var(--photos-exif-icon) center / contain no-repeat;
+	opacity: 0.85;
+}
+
+.photos-exif__item[data-key="camera"] {
+	--photos-exif-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 8.5h3.2L9 6h6l1.8 2.5H20V18H4z'/%3E%3Ccircle cx='12' cy='13' r='3.2'/%3E%3C/svg%3E");
+}
+
+.photos-exif__item[data-key="lens"] {
+	--photos-exif-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3Ccircle cx='12' cy='12' r='4.5'/%3E%3Ccircle cx='12' cy='12' r='1'/%3E%3C/svg%3E");
+}
+
+.photos-exif__item[data-key="focal"] {
+	--photos-exif-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12L19.5 5M4 12l15.5 7'/%3E%3Cpath d='M14.5 7.3a11 11 0 0 1 0 9.4'/%3E%3C/svg%3E");
+}
+
+.photos-exif__item[data-key="aperture"] {
+	--photos-exif-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3Cpath d='M12 3.5l3.4 7.2M20.5 12l-7.6 2.4M12 20.5l-3.4-7.2M3.5 12l7.6-2.4'/%3E%3C/svg%3E");
+}
+
+.photos-exif__item[data-key="shutter"] {
+	--photos-exif-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='13.5' r='7'/%3E%3Cpath d='M12 13.5V10M10 3.5h4M18.3 7.2l1.2-1.2'/%3E%3C/svg%3E");
+}
+
+.photos-exif__item[data-key="iso"] {
+	--photos-exif-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='6.5' width='18' height='11' rx='1.5'/%3E%3Cpath d='M7 10v4M12.2 10H10.6a1 1 0 0 0 0 2h.8a1 1 0 0 1 0 2H9.8'/%3E%3Crect x='14.2' y='10' width='3' height='4' rx='1.3'/%3E%3C/svg%3E");
+}
+
+.photos-viewer__like {
+	flex: 0 0 17rem;
+	min-width: 0;
+}
+
+.photos-viewer__like .jetpack-likes-widget-wrapper {
+	min-height: 0;
+}
+
+/* Below the first screen: the description and the comments, in a readable column. */
+.photos-viewer__more {
+	padding: 2.5rem max(1.5rem, calc(50% - 22rem)) 5rem;
+	border-top: 1px solid rgb(255 255 255 / 0.08);
+	font-size: 0.9375rem;
+	line-height: 1.5;
+	scroll-margin-top: 0;
+}
+
+.photos-viewer__description {
+	margin: 0 0 1.5rem;
+	font-size: 1rem;
+	opacity: 0.85;
+}
+
+.photos-viewer__more a,
+.photos-viewer__bar a {
 	color: inherit;
 }
 
 /*
- * The viewer's section while a photo's likes and comments load: a placeholder in their
- * shape (after a short delay, so fast loads don't flash it), then they fade in.
+ * The viewer's likes and comments while a photo's load: hidden (the comments show a
+ * placeholder in their shape, after a short delay so fast loads don't flash it), then
+ * they fade in.
  */
-.photos-viewer__social-content {
+.photos-viewer__like-content,
+.photos-viewer__comments-content {
 	transition: opacity 0.3s ease;
 }
 
-.photos-viewer__social-content:empty {
-	min-height: 12rem;
+.photos-viewer__comments-inner {
+	position: relative;
 }
 
-.photos-viewer__social.is-loading .photos-viewer__social-content {
+.photos-viewer__like-content.is-loading,
+.photos-viewer__comments-inner.is-loading .photos-viewer__comments-content {
 	visibility: hidden;
 	opacity: 0;
 	transition: none;
+}
+
+.photos-viewer__comments-content:empty {
+	min-height: 12rem;
 }
 
 .photos-viewer__social-placeholder {
 	display: none;
 }
 
-.photos-viewer__social.is-loading .photos-viewer__social-placeholder {
+.photos-viewer__comments-inner.is-loading .photos-viewer__social-placeholder {
 	position: absolute;
-	inset: 1.5rem 0 auto;
+	inset: 0 0 auto;
 	display: block;
 	animation: photos-viewer-appear 0.2s ease 0.15s both;
-}
-
-.photos-viewer__skeleton-row {
-	display: flex;
-	align-items: center;
-	gap: 0.75rem;
 }
 
 .photos-viewer__skeleton {
@@ -241,20 +334,10 @@ dialog.photos-viewer[open],
 	animation: photos-viewer-shimmer 1.4s ease-in-out infinite;
 }
 
-.photos-viewer__skeleton--button {
-	width: 4.25rem;
-	height: 1.75rem;
-}
-
-.photos-viewer__skeleton--text {
-	width: 9rem;
-	height: 0.75rem;
-}
-
 .photos-viewer__skeleton--title {
 	width: 6.5rem;
 	height: 1rem;
-	margin: 1.75rem 0 1rem;
+	margin: 0 0 1rem;
 }
 
 .photos-viewer__skeleton--box {
@@ -276,7 +359,8 @@ dialog.photos-viewer[open],
 		animation: none;
 	}
 
-	.photos-viewer__social-content {
+	.photos-viewer__like-content,
+	.photos-viewer__comments-content {
 		transition: none;
 	}
 }
@@ -446,28 +530,114 @@ dialog.photos-viewer[open],
 	right: 1rem;
 }
 
-/* Narrow screens: photo on top, details below, everything scrolls together. */
+/*
+ * Portrait photos on a wide window: the stacked layout would leave wide empty sides, so
+ * the details go beside the photo instead (title, place and date, the settings as a list,
+ * the Like button, the description and comments), and the photo stays in view while they
+ * scroll. The page knows the photo's shape from the server, the viewer from its data.
+ */
+@media (min-width: 900px) and (min-aspect-ratio: 1/1) {
+	dialog.photos-viewer.is-portrait[open],
+	.photos-photo-page.is-portrait {
+		--photos-viewer-panel: 22rem;
+
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) var(--photos-viewer-panel);
+		/* max-content: in the viewer (a fixed-height dialog) auto rows got squeezed. */
+		grid-template-rows: max-content max-content 1fr;
+		align-items: start;
+		background:
+			linear-gradient(rgb(255 255 255 / 0.08) 0 0) calc(100% - var(--photos-viewer-panel)) 0 / 1px 100% no-repeat,
+			var(--photos-viewer-bg);
+	}
+
+	.photos-viewer.is-portrait .photos-viewer__screen {
+		display: contents;
+	}
+
+	.photos-viewer.is-portrait .photos-viewer__stage {
+		grid-column: 1;
+		grid-row: 1 / span 3;
+		position: sticky;
+		top: var(--photos-sticky-top, 0px);
+		height: var(--photos-viewer-height);
+		padding: 2.5rem 4.5rem;
+	}
+
+	.photos-viewer.is-portrait .photos-viewer__head,
+	.photos-photo-page.is-portrait .photos-viewer__head {
+		grid-column: 2;
+		grid-row: 1;
+		flex-direction: column;
+		align-items: flex-start;
+		padding: 4.5rem 2rem 0.75rem;
+		text-align: left;
+	}
+
+	.photos-viewer.is-portrait .photos-viewer__title {
+		font-size: 1.375rem;
+	}
+
+	.photos-viewer.is-portrait .photos-viewer__bar {
+		grid-column: 2;
+		grid-row: 2;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 1.25rem;
+		padding: 0.75rem 2rem 1.5rem;
+	}
+
+	.photos-viewer.is-portrait .photos-exif {
+		flex-direction: column;
+		gap: 0.65rem;
+		font-size: 0.875rem;
+	}
+
+	.photos-viewer.is-portrait .photos-viewer__like {
+		flex: none;
+	}
+
+	.photos-viewer.is-portrait .photos-viewer__more {
+		grid-column: 2;
+		grid-row: 3;
+		padding: 1.5rem 2rem 3rem;
+	}
+
+	/* The page's logo moves to the top of the panel, clear of the photo. */
+	.photos-photo-page.is-portrait .photos-viewer__home {
+		top: 1.75rem;
+		left: calc(100% - var(--photos-viewer-panel) + 2rem);
+	}
+}
+
+.photos-photo-page {
+	--photos-sticky-top: var(--wp-admin--admin-bar--height, 0px);
+}
+
+/* Narrow screens: everything stacks and scrolls; the photo takes the screen's width. */
 @media (max-width: 899px) {
-	dialog.photos-viewer {
-		overflow-y: auto;
-	}
-
-	dialog.photos-viewer[open],
-	.photos-photo-page {
+	.photos-viewer__screen {
 		display: block;
+		height: auto;
 	}
 
-	.photos-viewer__stage,
-	.photos-photo-page .photos-viewer__stage {
-		position: relative;
-		top: auto;
-		height: auto;
-		min-height: 40dvh;
-		padding: 4rem 0.75rem 1rem;
+	.photos-viewer__head,
+	.photos-photo-page .photos-viewer__head {
+		flex-direction: column;
+		align-items: center;
+		padding: 4rem 1.25rem 0.5rem;
+	}
+
+	.photos-viewer__stage {
+		display: block;
+		padding: 0.5rem 0.75rem;
 	}
 
 	.photos-viewer__image {
 		max-height: 75dvh;
+		margin: 0 auto;
+		padding: 10px;
+		--photos-vf-arm: 16px;
 	}
 
 	.photos-viewer__prev,
@@ -489,10 +659,23 @@ dialog.photos-viewer[open],
 		right: 0.75rem;
 	}
 
-	.photos-viewer__panel {
-		overflow: visible;
-		padding: 1.5rem 1.25rem 3rem;
-		border-left: 0;
-		border-top: 1px solid rgb(255 255 255 / 0.08);
+	.photos-viewer__home {
+		top: 1.25rem;
+		left: 1.25rem;
+	}
+
+	.photos-viewer__bar {
+		flex-direction: column;
+		align-items: flex-start;
+		padding: 0.75rem 1.25rem 1.25rem;
+	}
+
+	.photos-viewer__like {
+		flex: none;
+		width: 100%;
+	}
+
+	.photos-viewer__more {
+		padding: 2rem 1.25rem 4rem;
 	}
 }

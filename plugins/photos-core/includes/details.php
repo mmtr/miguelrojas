@@ -280,6 +280,35 @@ function photos_get_description( $post ) {
 }
 
 /**
+ * Details shown on the title line: place and date taken, as "Place · Date".
+ *
+ * @param array[] $items Items from photos_get_image_details_items().
+ * @return string
+ */
+function photos_details_meta_line( $items ) {
+	$parts = array();
+	foreach ( $items as $item ) {
+		if ( in_array( $item['key'], array( 'location', 'taken' ), true ) ) {
+			$parts[] = $item['value'];
+		}
+	}
+	return implode( ' · ', $parts );
+}
+
+/**
+ * Details shown in the bar under the photo: the camera settings (everything but place
+ * and date).
+ *
+ * @param array[] $items Items from photos_get_image_details_items().
+ * @return array[]
+ */
+function photos_details_exif_items( $items ) {
+	return array_values(
+		array_filter( $items, static fn( $item ) => ! in_array( $item['key'], array( 'location', 'taken' ), true ) )
+	);
+}
+
+/**
  * Everything the viewer needs to show one image, or null if the image is missing.
  *
  * @param int   $image_id Attachment ID.
