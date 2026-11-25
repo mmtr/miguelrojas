@@ -38,7 +38,7 @@ Needs SSH enabled for the site with your key attached (WordPress.com → Setting
 
 ## Publishing a photo
 
-Create a post, set the photo as its **featured image**, write the description in the post body and fill in **Location** in the "Photo details" sidebar panel. Camera, lens, focal length, aperture, shutter speed, ISO and date taken are read from the photo file on upload.
+Create a post, set the photo as its **featured image**, write the description in the post body and fill in **Location** in the "Photo details" sidebar panel. Camera, lens, focal length, aperture, shutter speed, ISO and date taken are read from the photo file on upload. The grid shows photos newest-published first: leave the post date as the day you publish it (the date taken shown with the photo comes from the file, not the post date).
 
 ## Publishing an album
 
