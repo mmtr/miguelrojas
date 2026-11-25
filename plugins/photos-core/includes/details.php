@@ -300,8 +300,7 @@ function photos_build_viewer_photo( $image_id, $fields ) {
 			'description'   => '',
 			'items'         => array(),
 			'alt'           => '',
-			'commentsUrl'   => null,
-			'commentsLabel' => '',
+			'social'        => false,
 		),
 		$fields
 	);
@@ -331,23 +330,14 @@ function photos_build_viewer_photo( $image_id, $fields ) {
  * @return array|null
  */
 function photos_get_viewer_photo( $post ) {
-	$url      = get_permalink( $post );
-	$comments = (int) get_comments_number( $post );
-	$social   = comments_open( $post ) || $comments;
-
-	/* translators: %s: number of comments. */
-	$count_label = sprintf( _n( '%s comment', '%s comments', $comments, 'photos-core' ), number_format_i18n( $comments ) );
-
 	return photos_build_viewer_photo(
 		(int) get_post_thumbnail_id( $post ),
 		array(
-			'url'           => $url,
-			'title'         => html_entity_decode( get_the_title( $post ), ENT_QUOTES, 'UTF-8' ),
-			'description'   => photos_get_description( $post ),
-			'items'         => photos_get_details_items( $post->ID ),
-			// Likes and comments live on the photo's page (same layout), so the viewer links there.
-			'commentsUrl'   => $social ? $url . '#comments' : null,
-			'commentsLabel' => $comments ? $count_label . ' · ' . __( 'Like or comment', 'photos-core' ) : __( 'Like or comment', 'photos-core' ),
+			'url'         => get_permalink( $post ),
+			'title'       => html_entity_decode( get_the_title( $post ), ENT_QUOTES, 'UTF-8' ),
+			'description' => photos_get_description( $post ),
+			'items'       => photos_get_details_items( $post->ID ),
+			'social'      => photos_has_social( $post ), // The viewer loads them from the photo's page.
 		)
 	);
 }

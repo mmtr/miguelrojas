@@ -41,49 +41,6 @@ $photos_preload_attrs = static function ( $post ) {
 
 wp_interactivity_state( 'photos/page', array( 'loading' => false ) );
 
-// Likes (Jetpack's Like block) and comments (core blocks; Jetpack swaps in its comment form),
-// rendered for this photo post.
-$photos_social = static function () use ( $photos_post ) {
-	$markup = '<!-- wp:jetpack/like /-->
-<!-- wp:comments {"className":"photos-comments"} -->
-<div class="wp-block-comments photos-comments"><!-- wp:comments-title {"showPostTitle":false,"level":2} /-->
-<!-- wp:comment-template -->
-<!-- wp:comment-author-name /-->
-<!-- wp:comment-date /-->
-<!-- wp:comment-content /-->
-<!-- wp:comment-reply-link /-->
-<!-- /wp:comment-template -->
-<!-- wp:comments-pagination -->
-<!-- wp:comments-pagination-previous /-->
-<!-- wp:comments-pagination-next /-->
-<!-- /wp:comments-pagination -->
-<!-- wp:post-comments-form /--></div>
-<!-- /wp:comments -->';
-
-	// render_block() rather than WP_Block directly: Jetpack registers some of its blocks
-	// (Like among them) only when render_block() first meets them on the front end.
-	// Unregistered blocks (no Jetpack, e.g. locally) render nothing.
-	$add_context = static function ( $context ) use ( $photos_post ) {
-		$context['postId']   = $photos_post->ID;
-		$context['postType'] = $photos_post->post_type;
-		return $context;
-	};
-	add_filter( 'render_block_context', $add_context );
-	$html = '';
-	foreach ( parse_blocks( $markup ) as $parsed ) {
-		if ( ! empty( $parsed['blockName'] ) ) {
-			$html .= render_block( $parsed );
-		}
-	}
-	remove_filter( 'render_block_context', $add_context );
-
-	// The section is #comments (also when there are none yet); the title can't share it.
-	$tags = new WP_HTML_Tag_Processor( $html );
-	while ( $tags->next_tag( array( 'class_name' => 'wp-block-comments-title' ) ) ) {
-		$tags->remove_attribute( 'id' );
-	}
-	return $tags->get_updated_html();
-};
 ?>
 <div
 	<?php echo get_block_wrapper_attributes( array( 'class' => 'photos-viewer photos-photo-page' ) ); ?>
@@ -152,9 +109,9 @@ $photos_social = static function () use ( $photos_post ) {
 				<?php endforeach; ?>
 			</dl>
 		<?php endif; ?>
-		<?php if ( 'post' === $photos_post->post_type && ( comments_open( $photos_post ) || get_comments_number( $photos_post ) ) ) : ?>
+		<?php if ( photos_has_social( $photos_post ) ) : ?>
 			<section class="photos-viewer__social" id="comments">
-				<?php echo $photos_social(); // phpcs:ignore WordPress.Security.EscapeOutput -- rendered blocks. ?>
+				<?php echo photos_render_social( $photos_post ); // phpcs:ignore WordPress.Security.EscapeOutput -- rendered blocks. ?>
 			</section>
 		<?php endif; ?>
 	</aside>

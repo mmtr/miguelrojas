@@ -8,7 +8,7 @@
  */
 import { store, getElement, withSyncEvent } from '@wordpress/interactivity';
 
-const EMPTY = { title: '', description: '', url: null, imageId: null, index: null, items: [], src: null, srcset: null, width: null, height: null, alt: '', commentsUrl: null, commentsLabel: '' };
+const EMPTY = { title: '', description: '', url: null, imageId: null, index: null, items: [], src: null, srcset: null, width: null, height: null, alt: '', social: false };
 const PHOTO_HASH = /^#photo-(\d+)$/;
 const SWIPE_DISTANCE = 50;
 const LOAD_AHEAD = 1000; // Start loading the next page this many pixels before the end.
@@ -59,6 +59,98 @@ const findPhotoIndex = ( target ) => {
 	}
 	const key = pathKey( link.href );
 	return state.photos.findIndex( ( photo ) => ! photo.imageId && pathKey( photo.url ) === key );
+};
+
+/*
+ * Likes and comments: the viewer takes the section from the photo's page and puts it in
+ * the panel. Jetpack sets up its comment form only when its script runs, so the script
+ * runs again for each photo; its Like script looks for new buttons on scroll.
+ */
+const SOCIAL_DELAY = 200; // Quick arrow presses don't load every photo's comments.
+const socialSections = new Map(); // Photo URL → promise of its section's HTML.
+let socialTimer = 0;
+let socialToken = 0;
+let likeCount = 0;
+
+const fetchSocial = ( url ) => {
+	if ( ! socialSections.has( url ) ) {
+		const request = fetch( url, { credentials: 'same-origin' } )
+			.then( ( response ) => ( response.ok ? response.text() : Promise.reject( new Error( response.statusText ) ) ) )
+			.then( ( html ) => {
+				const page = new DOMParser().parseFromString( html, 'text/html' );
+				return page.querySelector( '.photos-photo-page .photos-viewer__social' )?.innerHTML ?? '';
+			} )
+			.catch( ( error ) => {
+				socialSections.delete( url ); // Try again next time.
+				throw error;
+			} );
+		socialSections.set( url, request );
+	}
+	return socialSections.get( url );
+};
+
+// Jetpack's Like script remembers each button's id; a photo shown again needs a new one.
+const withNewLikeId = ( html ) => {
+	const id = html.match( /like-post-wrapper-\d+-\d+-(\w+)/ )?.[ 1 ];
+	return id ? html.replaceAll( id, `${ id }${ ++likeCount }` ) : html;
+};
+
+// Scripts added with innerHTML don't run: replace them with copies that do
+// (e.g. Akismet's timestamp on the comment form).
+const runInlineScripts = ( root ) => {
+	root.querySelectorAll( 'script' ).forEach( ( original ) => {
+		const script = document.createElement( 'script' );
+		for ( const { name, value } of original.attributes ) {
+			script.setAttribute( name, value );
+		}
+		script.textContent = original.textContent;
+		original.replaceWith( script );
+	} );
+};
+
+const runScriptAgain = ( id ) => {
+	const src = document.getElementById( id )?.src;
+	if ( ! src ) {
+		return;
+	}
+	const script = document.createElement( 'script' );
+	script.src = src;
+	script.onload = script.onerror = () => script.remove();
+	document.body.append( script );
+};
+
+const showSocial = ( photo ) => {
+	const content = document.querySelector( '.photos-viewer__social-content' );
+	if ( ! content ) {
+		return;
+	}
+	clearTimeout( socialTimer );
+	const token = ++socialToken;
+	if ( ! photo?.social ) {
+		content.replaceChildren();
+		return;
+	}
+	content.classList.add( 'is-loading' ); // The previous photo's stay hidden until then.
+	socialTimer = setTimeout( () => {
+		fetchSocial( photo.url ).then(
+			( html ) => {
+				if ( token !== socialToken ) {
+					return;
+				}
+				content.innerHTML = withNewLikeId( html );
+				content.classList.remove( 'is-loading' );
+				runInlineScripts( content );
+				runScriptAgain( 'jetpack-comments-js' );
+				window.dispatchEvent( new Event( 'scroll' ) );
+			},
+			() => {
+				if ( token === socialToken ) {
+					content.replaceChildren();
+					content.classList.remove( 'is-loading' );
+				}
+			}
+		);
+	}, SOCIAL_DELAY );
 };
 
 const nextLinkIn = ( root ) => root.querySelector( '.photos-grid .wp-block-query-pagination-next' )?.href || null;
@@ -203,6 +295,7 @@ const { state, actions, callbacks } = store( 'photos', {
 				state.loading = false;
 				state.opening = false;
 				state.currentIndex = index;
+				showSocial( photo );
 				document.title = `${ photo.title } – ${ state.siteName }`;
 
 				if ( historyMode === 'push' ) {
@@ -218,6 +311,7 @@ const { state, actions, callbacks } = store( 'photos', {
 			} );
 		},
 		hide() {
+			showSocial( null );
 			navigation++;
 			target = -1;
 			state.loading = false;
@@ -276,26 +370,9 @@ const { state, actions, callbacks } = store( 'photos', {
 			opener = event.target.closest( 'a[href]' );
 			actions.show( index, 'push' );
 		} ),
-		// The viewer already shows the photo's URL, so a link to its #comments would only
-		// change the hash. Put the grid's URL back first so the photo page (with the likes
-		// and comments) really loads, in place of the viewer's history entry: Back then
-		// returns to the grid.
-		openComments: withSyncEvent( ( event ) => {
-			if ( event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey ) {
-				return;
-			}
-			event.preventDefault();
-			const url = state.current.commentsUrl;
-			window.history.replaceState( historyState(), '', pageUrl );
-			if ( pushedEntry ) {
-				window.location.replace( url );
-			} else {
-				window.location.assign( url );
-			}
-		} ),
 		onKeydown: withSyncEvent( ( event ) => {
-			if ( ! state.isOpen ) {
-				return;
+			if ( ! state.isOpen || event.target.closest?.( 'input, textarea, select, [contenteditable]' ) ) {
+				return; // Arrow keys in the comment form move the cursor.
 			}
 			if ( event.key === 'ArrowLeft' ) {
 				event.preventDefault();
@@ -306,8 +383,14 @@ const { state, actions, callbacks } = store( 'photos', {
 			}
 		} ),
 		// Esc: route through close() so the history entry is cleaned up too.
+		// In the comment form, Esc only leaves the field.
 		onCancel: withSyncEvent( ( event ) => {
 			event.preventDefault();
+			const field = document.activeElement?.closest?.( 'input, textarea, select, [contenteditable]' );
+			if ( field ) {
+				field.blur();
+				return;
+			}
 			actions.close();
 		} ),
 		// Clicking the dark area around the photo closes the viewer.

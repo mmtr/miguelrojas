@@ -186,20 +186,7 @@ dialog.photos-viewer[open],
 	display: none !important;
 }
 
-/* Likes and comments: a link in the viewer, the full section on the photo page. */
-.photos-viewer__comments-link {
-	display: inline-block;
-	margin-top: 2rem;
-	color: inherit;
-	font-size: 0.875rem;
-	text-underline-offset: 0.2em;
-}
-
-.photos-viewer__comments-link:hover {
-	color: inherit;
-	opacity: 0.75;
-}
-
+/* Likes and comments, under the details. */
 .photos-viewer__social {
 	margin-top: 2rem;
 	padding-top: 1.5rem;
@@ -209,6 +196,15 @@ dialog.photos-viewer[open],
 
 .photos-viewer__social a {
 	color: inherit;
+}
+
+/* The viewer's section while the next photo's loads: keeps its space, shows nothing. */
+.photos-viewer__social-content.is-loading {
+	visibility: hidden;
+}
+
+.photos-viewer__social-content:empty {
+	min-height: 8rem;
 }
 
 .photos-comments .wp-block-comments-title,

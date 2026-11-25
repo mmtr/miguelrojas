@@ -11,8 +11,9 @@
 
 global $wp_query;
 
-$photos_list  = array();
-$photos_total = null;
+$photos_list   = array();
+$photos_total  = null;
+$photos_social = null; // A photo post with likes and comments, if the viewer shows any.
 if ( is_singular( 'album' ) ) {
 	$photos_list = photos_get_album_viewer_photos( get_queried_object() );
 } else {
@@ -22,6 +23,9 @@ if ( is_singular( 'album' ) ) {
 		if ( $photos_photo ) {
 			$photos_list[] = $photos_photo;
 			$photos_first  = $photos_first ? $photos_first : $photos_post;
+			if ( ! $photos_social && $photos_photo['social'] ) {
+				$photos_social = $photos_post;
+			}
 		}
 	}
 
@@ -53,6 +57,12 @@ wp_interactivity_state(
 		'siteName'     => html_entity_decode( get_bloginfo( 'name' ), ENT_QUOTES, 'UTF-8' ),
 	)
 );
+
+// The viewer drops each photo's likes and comments in from its page; their scripts have
+// to be on this page already.
+if ( $photos_social ) {
+	photos_enqueue_social_assets( $photos_social );
+}
 
 $photos_icon = static function ( $path ) {
 	return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="' . esc_attr( $path ) . '"/></svg>';
@@ -114,6 +124,12 @@ $photos_icon = static function ( $path ) {
 				</div>
 			</template>
 		</dl>
-		<a class="photos-viewer__comments-link" data-wp-on--click="actions.openComments" data-wp-bind--href="state.current.commentsUrl" data-wp-bind--hidden="!state.current.commentsUrl" data-wp-text="state.current.commentsLabel"></a>
+		<?php if ( $photos_social ) : ?>
+			<section class="photos-viewer__social" data-wp-bind--hidden="!state.current.social" aria-label="<?php esc_attr_e( 'Likes and comments', 'photos-core' ); ?>">
+				<?php // Jetpack's Like button takes its text and link colors from these. ?>
+				<span class="sd-text-color" hidden></span><a class="sd-link-color" hidden></a>
+				<div class="photos-viewer__social-content"></div>
+			</section>
+		<?php endif; ?>
 	</aside>
 </dialog>

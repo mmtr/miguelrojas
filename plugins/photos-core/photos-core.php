@@ -17,6 +17,7 @@ define( 'PHOTOS_CORE_FILE', __FILE__ );
 
 require __DIR__ . '/includes/details.php';
 require __DIR__ . '/includes/albums.php';
+require __DIR__ . '/includes/social.php';
 
 add_action(
 	'init',
