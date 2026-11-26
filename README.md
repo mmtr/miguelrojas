@@ -55,6 +55,30 @@ Needs SSH enabled for the site with your key attached (WordPress.com → Setting
 
 Create a post, set the photo as its **featured image**, write the description in the post body and fill in **Location** in the "Photo details" sidebar panel (or on the image in the Media Library: the post's field shows it when left empty, and wins when filled). Camera, lens, focal length, aperture, shutter speed, ISO and date taken are read from the photo file on upload. The grid shows photos newest-published first: leave the post date as the day you publish it (the date taken shown with the photo comes from the file, not the post date).
 
+## Publishing from Lightroom
+
+`lightroom/MiguelRojas.lrplugin` is a Lightroom Classic publish service for the site: drag photos into its collection and click **Publish**.
+
+Setting it up (once):
+
+1. **File → Plug-in Manager → Add**, and pick the `lightroom/MiguelRojas.lrplugin` folder.
+2. In the **Publish Services** panel, click **Set Up…** next to "miguelrojas.photo" (or add it in the Publishing Manager).
+3. **Username:** your WordPress username. **Create a Password…** opens WordPress's page for a new application password; approve it, paste the password into **Application password** and click **Check Connection**. (Lightroom keeps the password in its own password store.)
+4. Under **Metadata**: **All Metadata**, so the site can show the camera settings and date taken.
+5. Under **Watermarking**: the viewfinder watermark (see Watermark below). Then **Save**.
+
+Format and size are fixed by the service: sRGB JPEG, 3000 px on the long edge, quality 80.
+
+How photos map to posts:
+
+- **Title** → the post title (the file name if empty), **Caption** → the description, **Alt Text** (or **Headline** in Lightroom versions without it) → the image's alt text, **Sublocation, City, Country** → Location.
+- New photos are published right away, or saved as drafts (a setting in the service). The post date is when you publish, which keeps the grid's order.
+- Editing a published photo (develop settings, title, caption or location) marks it for republishing. **Publish** then uploads the new version under a new file name (so the CDN can't serve the old one), points the post at it and deletes the previous upload. The post keeps its address, date, likes and comments.
+- Removing a photo from the collection and publishing moves its post to the trash (WordPress → Posts → Trash).
+- Lightroom's **Comments** panel shows each photo's comments and its like count.
+
+Tests (Docker, against the local WordPress started with `npm start`): `sh lightroom/tests/run.sh` (publishes the first JPEG in `photos/web/`, or `TEST_PHOTO=…`).
+
 ## Publishing an album
 
 **Albums → Add New Album**, then drop your photos into the gallery (new albums start with one). Text above or below the gallery becomes the album's introduction, and each image's caption is shown with it in the viewer. Set the album's **Location** in the "Album details" panel. A photo taken somewhere else can have its own location: select it in the Media Library and fill in **Location**.
@@ -93,6 +117,7 @@ Photos carry the name in red viewfinder corners (`brand/png/watermark-viewfinder
   - `blocks/entry-label/`: album title and photo count over album covers in the grid
   - `blocks/album-summary/`: "7 photos · Location · Month Year" line on album pages
   - `editor/photo-panel.js`: "Photo details" / "Album details" panel in the editor
+- `lightroom/MiguelRojas.lrplugin/`: the Lightroom Classic publish service (`ServiceProvider.lua` for Lightroom's side, `Publisher.lua` and `WordPress.lua` for the posts); tests in `lightroom/tests/`
 - `themes/photos/theme.json`: colors, type, spacing
 - `themes/photos/templates/`: page templates (`index` = photo grid, `single` = one photo, `single-album` = album page)
 - `themes/photos/parts/`: header and footer
