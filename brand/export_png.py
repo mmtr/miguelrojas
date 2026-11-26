@@ -23,6 +23,8 @@ EXPORTS = [
     ("wordmark-color.svg", "wordmark-color.png", 2000),
     ("watermark-viewfinder.svg", "watermark-viewfinder.png", 3000),
     ("icon-viewfinder.svg", "site-icon-512.png", 512),
+    ("lockup-black.svg", "lockup-black.png", 2400),
+    ("lockup-white.svg", "lockup-white.png", 2400),
 ]
 
 

@@ -8,6 +8,7 @@ height: squared letters in the spirit of the original logo, drawn flat.
     sh brand/export-png.sh           # renders PNGs (watermark, site icon) with Chrome
 """
 
+import base64
 import math
 import os
 
@@ -256,6 +257,43 @@ def viewfinder_icon(side=300):
     )
 
 
+# The full lockup, as in the site header: the name, the slogan under it at exactly its
+# width (Jost Light caps), and red viewfinder corners around both. Sizes are in the
+# name's units (letters are 100 tall), matching the header's CSS (18px logo height:
+# 18px/24px padding, 20px corner arms, 2px lines).
+SLOGAN = "Capturing the beauty of a moment"
+JOST = os.path.join(THEME_ASSETS, "fonts", "jost-300-latin.woff2")
+
+
+def lockup(name_color, slogan_color):
+    s1, p1, end = word("MIGUEL")
+    s2, p2, total = word("ROJAS", end + SPACE)
+    unit = 100 / 18  # name units per CSS pixel
+    pad_x, pad_y = 24 * unit, 18 * unit
+    gap, slogan_h, cap, size = 45, 44, 43, 62
+    w, h = total + pad_x * 2, H + gap + slogan_h + pad_y * 2
+    with open(JOST, "rb") as f:
+        font = base64.b64encode(f.read()).decode()
+    style = (
+        "<defs><style>@font-face{font-family:'Jost';font-weight:300;"
+        f"src:url(data:font/woff2;base64,{font}) format('woff2')}}</style></defs>"
+    )
+    # The slogan starts 2.7 units early and ends 0.9 late, so the C's and T's ink lines up
+    # with the name's edges (see themes/photos/blocks/logo/render.php).
+    slogan = (
+        f'<text x="{pad_x - 2.7:g}" y="{pad_y + H + gap + cap:g}" font-family="Jost" font-weight="300" '
+        f'font-size="{size}" textLength="{total + 3.6:g}" lengthAdjust="spacing" fill="{slogan_color}">'
+        f"{SLOGAN.upper()}</text>"
+    )
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w:g} {h:g}" width="{w:g}" height="{h:g}" '
+        f'role="img" aria-labelledby="title"><title id="title">Miguel Rojas – {SLOGAN}</title>'
+        f"{style}{corners(0, 0, w, h, 20 * unit, 2 * unit, RED)}"
+        f'<g transform="translate({pad_x:g} {pad_y:g})">{group(s1, p1, name_color)}{group(s2, p2, name_color)}</g>'
+        f"{slogan}</svg>\n"
+    )
+
+
 def write(path, content):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
@@ -275,6 +313,8 @@ def main():
     write(os.path.join(svg, "monogram-white.svg"), monogram(None, WHITE))
     write(os.path.join(svg, "watermark-viewfinder.svg"), viewfinder_watermark())
     write(os.path.join(svg, "icon-viewfinder.svg"), viewfinder_icon())
+    write(os.path.join(svg, "lockup-black.svg"), lockup(INK, "#6F6D68"))  # For light backgrounds.
+    write(os.path.join(svg, "lockup-white.svg"), lockup("#EBE9E4", "#96948F"))  # For dark backgrounds.
 
     write(os.path.join(THEME_ASSETS, "logo.svg"), wordmark(None, None, inline=True))
     write(os.path.join(THEME_ASSETS, "favicon.svg"), viewfinder_icon())
