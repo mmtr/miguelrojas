@@ -1,4 +1,4 @@
-<p>
+<p align="center">
   <a href="https://miguelrojas.photo">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="brand/png/lockup-white.png">
