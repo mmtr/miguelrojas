@@ -1,6 +1,12 @@
-# Photos
+# Miguel Rojas
 
-Personal photography site built on WordPress, with a custom block theme in `themes/photos`.
+The code behind **[miguelrojas.photo](https://miguelrojas.photo)**, Miguel Rojas's photography site: a WordPress block theme (`themes/photos`) and a plugin (`plugins/photos-core`), hosted on WordPress.com.
+
+- A full-bleed grid of photos, newest first, that loads more as you scroll.
+- A full-screen viewer with the camera settings, location and date read from each photo, plus likes and comments (Jetpack).
+- Albums, a logo drawn in code, and a watermark that matches it.
+
+The photos and the posts themselves live in WordPress on the site, not in this repository.
 
 ## Local development
 
@@ -24,7 +30,7 @@ Other commands:
 
 ## Going live
 
-Hosted on WordPress.com (Personal plan) at `miguelrojas.photo`. Step-by-step setup: [docs/go-live.md](docs/go-live.md). `npm run package` builds the theme and plugin zips for uploading.
+Hosted on WordPress.com (Personal plan) at [miguelrojas.photo](https://miguelrojas.photo). How it was set up: [docs/go-live.md](docs/go-live.md). `npm run package` builds the theme and plugin zips for uploading.
 
 ### Deploying updates
 
@@ -38,7 +44,7 @@ Needs SSH enabled for the site with your key attached (WordPress.com → Setting
 
 ## Publishing a photo
 
-Create a post, set the photo as its **featured image**, write the description in the post body and fill in **Location** in the "Photo details" sidebar panel. Camera, lens, focal length, aperture, shutter speed, ISO and date taken are read from the photo file on upload. The grid shows photos newest-published first: leave the post date as the day you publish it (the date taken shown with the photo comes from the file, not the post date).
+Create a post, set the photo as its **featured image**, write the description in the post body and fill in **Location** in the "Photo details" sidebar panel (or on the image in the Media Library: the post's field shows it when left empty, and wins when filled). Camera, lens, focal length, aperture, shutter speed, ISO and date taken are read from the photo file on upload. The grid shows photos newest-published first: leave the post date as the day you publish it (the date taken shown with the photo comes from the file, not the post date).
 
 ## Publishing an album
 
@@ -57,9 +63,16 @@ python3 brand/build.py        # SVGs in brand/svg/, plus the theme's logo.svg an
 python3 brand/export_png.py   # PNGs in brand/png/ (uses Google Chrome to render)
 ```
 
-- Watermark for Lightroom/Photoshop: `brand/png/watermark-white-shadow.png` (or `watermark-white.png` / `watermark-black.png`).
-- Site Icon: upload `brand/png/site-icon-512.png` in WordPress on the live site (until then the theme uses `assets/favicon.svg`).
+- Full logo (name, slogan, viewfinder corners): `brand/svg/lockup-black.svg` / `lockup-white.svg`, and PNGs in `brand/png/`.
+- Site Icon: upload `brand/png/site-icon-512.png` in WordPress (until then the theme uses `assets/favicon.svg`).
 - The header shows the logo through the theme's "Miguel Rojas Logo" block; "Rojas" uses the theme's Accent color.
+
+## Watermark
+
+Photos carry the name in red viewfinder corners (`brand/png/watermark-viewfinder.png`) in the bottom-right corner, at 80% opacity, about a quarter of the photo's shorter side wide.
+
+- From the command line: `swift bin/prepare-photos.swift --out photos/web photos/*.jpg` resizes, watermarks and keeps the camera data (`--no-watermark` for photos already watermarked).
+- From Lightroom Classic (Edit Watermarks): **Graphic** with that PNG, Opacity **80**, Size **Proportional 9**, Inset **3** / **3**, Anchor **bottom-right**. Checked against the script on portrait photos.
 
 ## Layout
 

@@ -48,7 +48,7 @@ Then:
 
 ## 5. Add photos
 
-- [ ] Export from Lightroom (or similar): long edge about 3000 px, JPEG quality around 80, sRGB, **location data removed**, camera data (EXIF) kept, watermark `brand/png/watermark-white-shadow.png`.
+- [ ] Export from Lightroom (or similar): long edge about 3000 px, JPEG quality around 80, sRGB, **location data removed**, camera data (EXIF) kept, watermark as in the README's Watermark section.
 - [ ] A single photo: a post with the photo as its featured image, the description as text, and **Location** in the "Photo details" panel.
 - [ ] An album: Albums → Add New Album, photos in the gallery, captions as descriptions, **Location** in "Album details".
 
