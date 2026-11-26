@@ -76,6 +76,9 @@ function provider.metadataThatTriggersRepublish( publishSettings )
 		title = true,
 		caption = true,
 		location = true,
+		city = true,
+		country = true,
+		gps = true, -- The suggested City and Country come from the GPS coordinates.
 	}
 end
 
@@ -210,6 +213,7 @@ function provider.processRenderedPhotos( functionContext, exportContext )
 			break
 		end
 		if rendered then
+			Publisher.addSuggestedLocation( meta, pathOrMessage )
 			local ok, result = LrTasks.pcall( Publisher.publishOne, creds, options, rendition.publishedPhotoId, pathOrMessage, meta )
 			LrFileUtils.delete( pathOrMessage )
 			if ok then

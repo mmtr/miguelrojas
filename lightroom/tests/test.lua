@@ -58,6 +58,43 @@ eq( 'posix from gmt', WordPress.posixFromGmt( '2026-11-26T13:08:08' ), 179569848
 eq( 'posix epoch', WordPress.posixFromGmt( '1970-01-01T00:00:00' ), 0 )
 eq( 'site url normalized', WordPress.normalizeSiteUrl( ' miguelrojas.photo/ ' ), 'https://miguelrojas.photo' )
 eq( 'site host', WordPress.siteHost( 'http://localhost:8888' ), 'localhost' )
+do
+	-- Lightroom writes its GPS-based location suggestions into the rendered file's XMP.
+	local xmp = '<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:Description photoshop:City="M&#xE1;laga" photoshop:State="Andalusia"'
+		.. ' Iptc4xmpCore:Location="Málaga-Este"><photoshop:Country>Spain &amp; more</photoshop:Country></rdf:Description></x:xmpmeta>'
+	local place = WordPress.xmpLocation( xmp )
+	eq( 'xmp: city', place.city, 'Málaga' )
+	eq( 'xmp: country (element)', place.country, 'Spain & more' )
+	eq( 'xmp: sublocation', place.sublocation, 'Málaga-Este' )
+	eq( 'xmp: missing', WordPress.xmpLocation( '' ).city, '' )
+
+	local path = os.tmpname()
+	local file = io.open( path, 'wb' )
+	file:write( '\255\216\255\225junk http://ns.adobe.com/xap/1.0/\0<?xpacket begin?>' .. xmp:gsub( 'Spain &amp; more', 'Spain' ) .. '<?xpacket end?>\255\217' )
+	file:close()
+	eq( 'xmp read from file', WordPress.xmpLocation( WordPress.readXmp( path ) ).country, 'Spain' )
+	eq( 'xmp: no file', WordPress.readXmp( path .. '-missing' ), '' )
+
+	local function metaFor( fields )
+		return Publisher.readMetadata { getFormattedMetadata = function( _, key )
+			return fields[ key ]
+		end }
+	end
+	local meta = metaFor { title = 'Sustento' }
+	Publisher.addSuggestedLocation( meta, path )
+	eq( 'suggested location: city and country, no district', meta.location, 'Málaga, Spain' )
+	meta = metaFor { title = 'Sustento', location = 'Puerto', city = 'Nerja' }
+	Publisher.addSuggestedLocation( meta, path )
+	eq( 'suggested location: fills only what’s missing', meta.location, 'Puerto, Nerja, Spain' )
+	meta = metaFor { title = 'Intercambio', location = 'Central Park', city = 'New York', country = 'USA' }
+	Publisher.addSuggestedLocation( meta, path )
+	eq( 'suggested location: typed location wins', meta.location, 'Central Park, New York, USA' )
+	meta = metaFor { title = 'Sustento' }
+	Publisher.addSuggestedLocation( meta, path .. '-missing' )
+	eq( 'suggested location: none in file', meta.location, '' )
+	os.remove( path )
+end
+
 check( 'authorize url', WordPress.authorizeUrl( 'miguelrojas.photo' ):find( '^https://miguelrojas.photo/wp%-admin/authorize%-application%.php%?app_name=Lightroom%%20Classic$' ) )
 
 do
@@ -183,7 +220,9 @@ else
 		local again = WordPress.getPost( creds, first.id )
 		eq( 'republish: title', again and again.title.raw, 'Prueba Lightroom (editada)' )
 		eq( 'republish: still draft', again and again.status, 'draft' )
-		eq( 'republish: location', again and again.meta.photos_location, 'Central Park, USA' )
+		-- An empty City is filled from the rendered file, as with Lightroom's suggestions.
+		local fileCity = WordPress.xmpLocation( WordPress.readXmp( photoPath ) ).city
+		eq( 'republish: location', again and again.meta.photos_location, WordPress.joinLocation { 'Central Park', fileCity, 'USA' } )
 		check( 'republish: new image', again and again.featured_media ~= oldMediaId )
 		local newMedia = again and WordPress.getMedia( creds, again.featured_media )
 		check( 'republish: versioned file name', newMedia and newMedia.source_url:find( '%-v2[%-%w]*%.jpg$' ), newMedia and newMedia.source_url )

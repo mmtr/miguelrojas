@@ -71,9 +71,9 @@ Format and size are fixed by the service: sRGB JPEG, 3000 px on the long edge, q
 
 How photos map to posts:
 
-- **Title** → the post title (the file name if empty), **Caption** → the description, **Alt Text** (or **Headline** in Lightroom versions without it) → the image's alt text, **Sublocation, City, Country** → Location.
+- **Title** → the post title (the file name if empty), **Caption** → the description, **Alt Text** (or **Headline** in Lightroom versions without it) → the image's alt text, **Sublocation, City, Country** → Location. A City or Country left empty takes Lightroom's suggestion from the GPS coordinates (the values shown in italics), so a photo from Málaga gets "Málaga, Spain" without confirming anything. The suggested Sublocation, usually a district, is left out; type one to include it.
 - New photos are published right away, or saved as drafts (a setting in the service). The post date is when you publish, which keeps the grid's order.
-- Editing a published photo (develop settings, title, caption or location) marks it for republishing. **Publish** then uploads the new version under a new file name (so the CDN can't serve the old one), points the post at it and deletes the previous upload. The post keeps its address, date, likes and comments.
+- Editing a published photo (develop settings, title, caption, location or GPS) marks it for republishing. **Publish** then uploads the new version under a new file name (so the CDN can't serve the old one), points the post at it and deletes the previous upload. The post keeps its address, date, likes and comments.
 - Removing a photo from the collection and publishing moves its post to the trash (WordPress → Posts → Trash).
 - Lightroom's **Comments** panel shows each photo's comments and its like count.
 

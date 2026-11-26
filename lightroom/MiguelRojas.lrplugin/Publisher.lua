@@ -32,12 +32,35 @@ function Publisher.readMetadata( photo )
 	if alt == '' then
 		alt = field( photo, 'headline' )
 	end
+	local place = { sublocation = field( photo, 'location' ), city = field( photo, 'city' ), country = field( photo, 'country' ) }
 	return {
 		title = title,
 		slug = WordPress.slugify( title ),
 		caption = field( photo, 'caption' ),
 		alt = alt,
-		location = WordPress.joinLocation { field( photo, 'location' ), field( photo, 'city' ), field( photo, 'country' ) },
+		place = place,
+		location = WordPress.joinLocation { place.sublocation, place.city, place.country },
+	}
+end
+
+--- Fill a missing City or Country from Lightroom's suggestions: the italic values it looks
+--- up from the GPS coordinates. Plug-ins can't read those from the catalog, but Lightroom
+--- writes them into the rendered file. A suggested Sublocation (usually a city district,
+--- like "Málaga-Este") is left out; type one in Lightroom to include it.
+function Publisher.addSuggestedLocation( meta, filePath )
+	local place = meta.place
+	if not place or ( place.city ~= '' and place.country ~= '' ) then
+		return
+	end
+	local ok, xmp = pcall( WordPress.readXmp, filePath )
+	if not ok or xmp == '' then
+		return
+	end
+	local suggested = WordPress.xmpLocation( xmp )
+	meta.location = WordPress.joinLocation {
+		place.sublocation,
+		place.city ~= '' and place.city or suggested.city,
+		place.country ~= '' and place.country or suggested.country,
 	}
 end
 

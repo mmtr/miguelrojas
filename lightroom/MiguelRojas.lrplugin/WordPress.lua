@@ -84,6 +84,33 @@ function WordPress.joinLocation( parts )
 	return table.concat( out, ', ' )
 end
 
+--- The XMP packet of a JPEG ('' when there's none). It sits near the start of the file.
+function WordPress.readXmp( path )
+	local file = io.open( path, 'rb' )
+	if not file then
+		return ''
+	end
+	local head = file:read( 524288 ) or ''
+	file:close()
+	local start = head:find( '<x:xmpmeta', 1, true )
+	local stop = start and head:find( '</x:xmpmeta>', start, true )
+	return stop and head:sub( start, stop + #'</x:xmpmeta>' - 1 ) or ''
+end
+
+--- The IPTC location in an XMP packet: { sublocation, city, state, country }.
+function WordPress.xmpLocation( xmp )
+	local function get( name )
+		local value = xmp:match( name .. '="([^"]*)"' ) or xmp:match( '<' .. name .. '>([^<]*)</' .. name .. '>' )
+		return value and WordPress.plainText( value ) or ''
+	end
+	return {
+		sublocation = get( 'Iptc4xmpCore:Location' ),
+		city = get( 'photoshop:City' ),
+		state = get( 'photoshop:State' ),
+		country = get( 'photoshop:Country' ),
+	}
+end
+
 local function escapeHtml( s )
 	return ( s:gsub( '&', '&amp;' ):gsub( '<', '&lt;' ):gsub( '>', '&gt;' ) )
 end
