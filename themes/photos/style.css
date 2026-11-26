@@ -101,16 +101,14 @@ Text Domain: photos
 /*
  * Header: the logo as far from the top of the page as from the content below. The
  * header's own padding does both, so the usual gap before the content is dropped.
- * Centered except on phones.
+ * Centered.
  */
 .wp-site-blocks > header:has(.photos-header) + * {
 	margin-block-start: 0;
 }
 
-@media (min-width: 481px) {
-	.photos-header .photos-brand {
-		margin-inline: auto;
-	}
+.photos-header .photos-brand {
+	margin-inline: auto;
 }
 
 /*
