@@ -1,3 +1,12 @@
+<p>
+  <a href="https://miguelrojas.photo">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="brand/png/lockup-white.png">
+      <img src="brand/png/lockup-black.png" alt="Miguel Rojas – Capturing the beauty of a moment" width="480">
+    </picture>
+  </a>
+</p>
+
 # Miguel Rojas
 
 The code behind **[miguelrojas.photo](https://miguelrojas.photo)**, Miguel Rojas's photography site: a WordPress block theme (`themes/photos`) and a plugin (`plugins/photos-core`), hosted on WordPress.com.
