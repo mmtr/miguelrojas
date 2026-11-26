@@ -1,6 +1,8 @@
 /**
  * "Photo details" / "Album details" panel in the editor sidebar: edit the location and
  * see the camera data read from the featured image (photos) or the photo count (albums).
+ * A photo without a location of its own shows its image's (set in the Media Library), so
+ * the field shows that one as its placeholder.
  */
 ( function ( wp ) {
 	const { registerPlugin } = wp.plugins;
@@ -28,7 +30,7 @@
 	}
 
 	function PhotoDetailsPanel() {
-		const { postType, location, mediaId, imageMeta, imageCount } = useSelect( ( select ) => {
+		const { postType, location, mediaId, imageMeta, imageLocation, imageCount } = useSelect( ( select ) => {
 			const editor = select( editorStore );
 			const blockEditor = select( 'core/block-editor' );
 			const id = editor.getEditedPostAttribute( 'featured_media' );
@@ -38,6 +40,7 @@
 				location: ( editor.getEditedPostAttribute( 'meta' ) || {} ).photos_location || '',
 				mediaId: id,
 				imageMeta: media?.media_details?.image_meta,
+				imageLocation: ( media?.meta?.photos_location || '' ).trim(),
 				imageCount: blockEditor
 					.getClientIdsWithDescendants()
 					.filter( ( clientId ) => blockEditor.getBlockName( clientId ) === 'core/image' && blockEditor.getBlockAttributes( clientId )?.id ).length,
@@ -49,14 +52,22 @@
 			return null;
 		}
 
+		let help = __( 'Shown with the photo, for example "Lisbon, Portugal".', 'photos-core' );
+		if ( postType === 'album' ) {
+			help = __( 'Shown with every photo in the album, unless a photo has its own location in the Media Library.', 'photos-core' );
+		} else if ( imageLocation && ! location.trim() ) {
+			help = __( 'Empty, so the photo shows its image\'s location from the Media Library.', 'photos-core' );
+		} else if ( imageLocation && location.trim() !== imageLocation ) {
+			/* translators: %s: location set on the image in the Media Library. */
+			help = sprintf( __( 'Shown instead of the image\'s location from the Media Library (%s).', 'photos-core' ), imageLocation );
+		}
+
 		const locationField = el( TextControl, {
 			__next40pxDefaultSize: true,
 			__nextHasNoMarginBottom: true,
 			label: __( 'Location', 'photos-core' ),
-			help:
-				postType === 'album'
-					? __( 'Shown with every photo in the album, unless a photo has its own location in the Media Library.', 'photos-core' )
-					: __( 'Shown with the photo, for example "Lisbon, Portugal".', 'photos-core' ),
+			help,
+			placeholder: postType === 'post' ? imageLocation : undefined,
 			value: location,
 			onChange: ( value ) => editPost( { meta: { photos_location: value } } ),
 		} );

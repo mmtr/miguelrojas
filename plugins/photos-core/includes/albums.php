@@ -265,7 +265,7 @@ function photos_attachment_location_field( $fields, $post ) {
 		'label' => __( 'Location', 'photos-core' ),
 		'input' => 'text',
 		'value' => (string) get_post_meta( $post->ID, 'photos_location', true ),
-		'helps' => __( 'Shown with the photo. In an album, replaces the album location for this photo.', 'photos-core' ),
+		'helps' => __( 'Shown with the photo, unless its post has a location of its own. In an album, replaces the album\'s location for this photo.', 'photos-core' ),
 	);
 	return $fields;
 }
